@@ -52,6 +52,9 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Capture the salt we were spawned for — if the file changes (newer reroll), we yield to the new watcher
+  const ourSalt = pending.salt;
+
   const { rarity, species, shiny } = pending.profile;
   const shinyTag = shiny ? ' ✨' : '';
   log(`Waiting for Claude to close — will auto-apply ${rarity} ${species}${shinyTag}...`);
@@ -67,6 +70,24 @@ async function main(): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < TIMEOUT_MS) {
     await sleep(POLL_MS);
+
+    // Re-read pending file each cycle — if a newer reroll overwrote it, yield to the newer watcher
+    if (!existsSync(PENDING_PATCH_FILE)) {
+      log('Pending patch file gone — another watcher likely applied it. Exiting.');
+      return;
+    }
+    try {
+      const current = JSON.parse(readFileSync(PENDING_PATCH_FILE, 'utf-8')) as PendingPatch;
+      if (current.salt !== ourSalt) {
+        log(`Newer reroll detected (${current.salt}) — yielding. Exiting.`);
+        return;
+      }
+      // Refresh pending in case other fields updated
+      pending = current;
+    } catch {
+      // File temporarily unreadable — keep waiting
+      continue;
+    }
 
     // Check if binary was replaced by a Claude auto-update
     let currentMtime = 0;
