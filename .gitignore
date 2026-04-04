@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# AI agent folders
+.claude/
+.qwen/
+
+# Root-level AI instruction files
+claude.md
+dump.md
+
+# Docs (internal planning/dev notes)
+docs/
+
+# State files written at runtime
+~/.buddy_mcp_gacha.json
+~/.buddy_mcp_pending.json
+~/.buddy-mcp.json
+
+# Binary backup/tmp files created by patchBinary
+*.buddy-mcp-bak
+*.buddy-mcp-tmp
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test output
+coverage/

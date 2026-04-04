@@ -1,0 +1,76 @@
+{
+  "name": "buddy-mcp",
+  "version": "1.0.0",
+  "description": "Gacha companion system for Claude Code — collect, evolve, and patch your buddy via MCP",
+  "type": "module",
+  "bin": {
+    "buddy-mcp": "./dist/mcp/index.js"
+  },
+  "files": [
+    "dist/",
+    "assets/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive:true,force:true})\"",
+    "prebuild": "npm run clean",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/ tests/",
+    "lint:fix": "eslint src/ tests/ --fix",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'tests/**/*.ts'",
+    "typecheck": "tsc --noEmit",
+    "serve": "node dist/mcp/index.js",
+    "apply": "node dist/mcp/index.js apply",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lyell/buddy-mcp"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "buddy",
+    "companion",
+    "pet",
+    "gacha",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "WTFPL",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "chalk": "^5.3.0",
+    "zod": "^4.3.6"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/node": "^20",
+    "@vitest/coverage-v8": "^3",
+    "eslint": "^9",
+    "eslint-config-prettier": "^10",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.7",
+    "typescript-eslint": "^8",
+    "vitest": "^3"
+  }
+}
