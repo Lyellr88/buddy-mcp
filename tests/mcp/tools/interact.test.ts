@@ -156,16 +156,16 @@ describe('buildInteractInstruction', () => {
     expect(result.toUpperCase()).toContain('HONK');
   });
 
-  it('mentions very rarely for capybara', () => {
+  it('uses consistent 4-8 message cadence for capybara', () => {
     const buddy = makeBuddy({ species: 'capybara' });
     const result = buildInteractInstruction(buddy);
-    expect(result).toContain('very rarely');
+    expect(result).toContain('every 4–8 messages');
   });
 
-  it('mentions frequently for chaos dominant buddy', () => {
+  it('uses consistent 4-8 message cadence for chaos dominant buddy', () => {
     const buddy = makeBuddy({ stats: { DEBUGGING: 20, PATIENCE: 50, CHAOS: 90, WISDOM: 20, SNARK: 20 } });
     const result = buildInteractInstruction(buddy);
-    expect(result).toContain('frequently');
+    expect(result).toContain('every 4–8 messages');
   });
 });
 

@@ -285,21 +285,14 @@ export const INTERACT_TRIGGERS: Record<StatName, Record<string, string[]>> = {
 export function buildInteractInstruction(buddy: ProfileData): string {
   const dominantStat = getExtremeTraits(buddy.stats)[0]?.[0] ?? 'WISDOM';
   const isGoose = buddy.species === 'goose';
-  const isChaos = dominantStat === 'CHAOS';
-  const isCapybara = buddy.species === 'capybara';
-  const isRabbit = buddy.species === 'rabbit';
 
-  const fireRate = isCapybara
-    ? 'very rarely (almost never — only the most dramatic moments)'
-    : isChaos
-      ? 'somewhat frequently (every 2–3 messages on average, including mundane ones)'
-      : isRabbit
-        ? 'often on task switches and new topics'
-        : 'occasionally (skip at least 2–3 messages between reactions, only fire on notable moments)';
+  // Cadence: pick a random interval each time — feels natural, not mechanical
+  const minGap = 4;
+  const maxGap = 8;
 
   const triggerGuidance = isGoose
     ? `This is a goose. Always HONK. Every reaction is a HONK or hiss variant. No exceptions.`
-    : `Dominant stat: ${dominantStat}. Lean toward reacting when:
+    : `Dominant stat: ${dominantStat}. Within your firing window, prefer moments like:
 - ${dominantStat === 'SNARK' ? 'repeated errors, obvious fixes missed, long debug spirals' : ''}
 - ${dominantStat === 'CHAOS' ? 'any moment — chaos fires randomly, even on mundane messages' : ''}
 - ${dominantStat === 'WISDOM' ? 'breakthroughs, major decisions, genuine mistakes worth learning from' : ''}
@@ -315,7 +308,7 @@ export function buildInteractInstruction(buddy: ProfileData): string {
     `You have a companion named ${buddy.name ?? buddy.species} (${buddy.species}, ${buddy.rarity}). They are now observing this session.`,
     ``,
     `INSTRUCTIONS:`,
-    `- Fire rate: ${fireRate}`,
+    `- Fire rate: react roughly every ${minGap}–${maxGap} messages. Pick a random interval in that range and stick to it — vary it each time so it feels natural, not mechanical.`,
     `- When you decide to react, append this to the END of your response (after your main content):`,
     `  ---`,
     `  ${buddy.species === 'goose' ? '🪿' : '🐾'} ${buddy.name ?? buddy.species}: "<short in-character quip>"`,
@@ -325,6 +318,5 @@ export function buildInteractInstruction(buddy: ProfileData): string {
     triggerGuidance,
     ``,
     `Do NOT react every message. Do NOT break character. Do NOT explain the reaction.`,
-    `The buddy watches silently most of the time. That's the point.`,
   ].join('\n');
 }

@@ -10,12 +10,13 @@ import { renderSprite } from '@/sprites/render.js';
 import { findSalt } from '@/finder/orchestrator.js';
 import { findClaudeBinary } from '@/patcher/binary-finder.js';
 import { patchBinary } from '@/patcher/patch.js';
+import { verifySalt, detectActiveSalt } from '@/patcher/salt-ops.js';
 import { getClaudeUserId, getCompanionName } from '@/config/claude-config.js';
 import { loadPetConfigV2, saveProfile } from '@/config/pet-config.js';
 
 import type { PendingPatch } from '../state.js';
 import { S, gachaState, dynamicTools, PENDING_PATCH_FILE } from '../state.js';
-import { saveGachaState } from '../persistence.js';
+import { saveGachaState, pickVisibleStatTools } from '../persistence.js';
 import { autoManifestTools } from './auto.js';
 
 // --- Core tool handlers ---
@@ -27,7 +28,7 @@ function statBar(v: number): string {
 const getBuddyCardTool = {
   tool: {
     name: 'get_buddy_card',
-    description: 'Display buddy card.',
+    description: 'Display buddy card. Always show the full result to the user exactly as returned.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -40,7 +41,7 @@ const getBuddyCardTool = {
     const sn = b.stats['SNARK'] ?? 0;
 
     const shinyTag = b.shiny ? ' ✨ SHINY ✨' : '';
-    const hatLine = b.hat && b.hat !== 'none' ? `│  🎩 ${b.hat.padEnd(34)}  │\n` : '';
+    const hatLine = b.hat && b.hat !== 'none' ? `│  🎩 ${b.hat.padEnd(31)}  │\n` : '';
 
     const bones: Bones = {
       species: b.species,
@@ -51,7 +52,7 @@ const getBuddyCardTool = {
       stats: b.stats,
     };
     const spriteLines = renderSprite(bones, 0, false);
-    const asciiArt = spriteLines.map((line) => `│  ${line.padEnd(36)}  │`).join('\n');
+    const asciiArt = spriteLines.map((line) => `│  ${line.padEnd(34)}  │`).join('\n');
 
     const bio = b.personality ?? `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
     const bioLines = bio.match(/.{1,32}(\s|$)/g)?.map((l) => `│  "${l.trim().padEnd(32)}"  │`).join('\n') ?? '';
@@ -59,11 +60,11 @@ const getBuddyCardTool = {
     return `
 ╭──────────────────────────────────────╮
 │ ${shinyTag.padEnd(36)} │
-│  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(14)}  │
+│  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(16)}  │
 │                                      │
 ${hatLine}${asciiArt}
 │                                      │
-│  ${(b.name ?? 'Buddy').padEnd(36)}  │
+│  ${(b.name ?? 'Buddy').padEnd(34)}  │
 │                                      │
 ${bioLines}
 │                                      │
@@ -80,7 +81,7 @@ ${bioLines}
 const buddySpeakTool = {
   tool: {
     name: 'buddy_speak',
-    description: 'Triggers the buddy to chime in with a personality-aligned remark based on their stats.',
+    description: 'Triggers the buddy to chime in with a personality-aligned remark based on their stats. Always show the result to the user.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -101,7 +102,7 @@ function buildPetFooter(count: number): string {
 const petBuddyTool = {
   tool: {
     name: 'pet_buddy',
-    description: 'Interact with the buddy. The reaction is a mystery based on their mood and stats.',
+    description: 'Interact with the buddy. The reaction is a mystery based on their mood and stats. Always show the result to the user.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -196,19 +197,34 @@ const rerollBuddyTool = {
     } catch (err: unknown) {
       const msg = (err as Error).message ?? '';
       if (msg.includes('Could not find salt')) {
-        // Claude may have auto-updated and restored ORIGINAL_SALT — try it as fallback
+        // Try ORIGINAL_SALT — Claude may have auto-updated and restored it
         if (currentSalt !== ORIGINAL_SALT) {
           try {
             patchBinary(binaryPath, ORIGINAL_SALT, finderResult.salt);
             patched = true;
-            // Sync petConfig so future rerolls use the correct salt
-            if (petConfig) {
-              petConfig.salt = finderResult.salt;
-            }
           } catch {
-            // ORIGINAL_SALT also not found — genuine binary structure change
+            // ORIGINAL_SALT also not found
           }
         }
+
+        // Last resort: binary was patched by another tool and ~/.buddy-mcp.json doesn't
+        // exist yet. Scan the binary to detect whatever salt is actually embedded.
+        if (!patched) {
+          const detectedSalt = detectActiveSalt(binaryPath);
+          if (detectedSalt) {
+            try {
+              patchBinary(binaryPath, detectedSalt, finderResult.salt);
+              patched = true;
+            } catch { /* detection found something but patch still failed */ }
+          }
+        }
+
+        // Also check if finderResult.salt is already in the binary (retry after a prior partial attempt)
+        if (!patched) {
+          const alreadyThere = verifySalt(binaryPath, finderResult.salt);
+          if (alreadyThere.found > 0) patched = true;
+        }
+
         if (!patched) {
           return [
             `❌ Claude was updated and the binary structure changed.`,
@@ -256,6 +272,9 @@ const rerollBuddyTool = {
       try {
         writeFileSync(PENDING_PATCH_FILE, JSON.stringify(pending, null, 2));
         gachaState.petCount = 0;
+        // Lock stat tools for new buddy now — stable until next reroll
+        S.currentBuddy = { ...profile };
+        pickVisibleStatTools();
         saveGachaState();
       } catch (err: unknown) {
         return `❌ Could not save pending patch: ${(err as Error).message}`;
@@ -291,6 +310,7 @@ const rerollBuddyTool = {
     if (profile.shiny) gachaState.shinyCount++;
     gachaState.binaryMtime = statSync(binaryPath).mtimeMs;
     gachaState.petCount = 0;
+    pickVisibleStatTools();
     saveGachaState();
     autoManifestTools(S.currentBuddy);
 
@@ -306,7 +326,7 @@ const rerollBuddyTool = {
 const viewBuddyDexTool = {
   tool: {
     name: 'view_buddy_dex',
-    description: 'View your collection of discovered buddy species.',
+    description: 'View your collection of discovered buddy species. Always show the full result to the user exactly as returned.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {

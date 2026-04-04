@@ -15,6 +15,8 @@ export interface GachaState {
   binaryMtime?: number;
   petCount: number;
   interactMode: boolean;
+  /** Locked stat tool names for the current buddy — set at reroll, stable until next roll. */
+  visibleStatTools: string[];
 }
 
 export interface ManifestedToolDefinition {
@@ -45,6 +47,7 @@ export const gachaState: GachaState = {
   manifestedTools: [],
   petCount: 0,
   interactMode: false,
+  visibleStatTools: [],
 };
 
 export const dynamicTools: Map<

@@ -57,7 +57,7 @@ function buildCardLines(b: ProfileData): string[] {
   const ws = b.stats['WISDOM'] ?? 0;
   const sn = b.stats['SNARK'] ?? 0;
   const shinyTag = b.shiny ? ' ✨ SHINY ✨' : '';
-  const hatLine = b.hat && b.hat !== 'none' ? `│  🎩 ${b.hat.padEnd(34)}  │` : null;
+  const hatLine = b.hat && b.hat !== 'none' ? `│  ${('Hat: ' + b.hat).padEnd(34)}  │` : null;
 
   const bones: Bones = {
     species: b.species,
@@ -67,7 +67,7 @@ function buildCardLines(b: ProfileData): string[] {
     shiny: b.shiny,
     stats: b.stats,
   };
-  const spriteLines = renderSprite(bones, 0, false).map((line) => `│  ${line.padEnd(36)}  │`);
+  const spriteLines = renderSprite(bones, 0, false).map((line) => `│  ${line.padEnd(34)}  │`);
 
   const bio =
     b.personality ?? `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
@@ -77,12 +77,12 @@ function buildCardLines(b: ProfileData): string[] {
   return [
     '╭──────────────────────────────────────╮',
     `│ ${shinyTag.padEnd(36)} │`,
-    `│  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(14)}  │`,
+    `│  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(15)}  │`,
     '│                                      │',
     ...(hatLine ? [hatLine] : []),
     ...spriteLines,
     '│                                      │',
-    `│  ${(b.name ?? 'Buddy').padEnd(36)}  │`,
+    `│  ${(b.name ?? 'Buddy').padEnd(34)}  │`,
     '│                                      │',
     ...bioLines,
     '│                                      │',

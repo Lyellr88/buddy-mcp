@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { type Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { GachaState, ManifestedToolDefinition } from './state.js';
 import { S, gachaState, dynamicTools, GACHA_STATE_FILE } from './state.js';
+import { STAT_TOOLS_MAP } from './tools/stats.js';
 
 // --- Persistence ---
 
@@ -65,6 +66,7 @@ export function loadGachaState(): void {
     gachaState.binaryMtime = raw.binaryMtime ?? undefined;
     gachaState.petCount = raw.petCount ?? 0;
     gachaState.interactMode = raw.interactMode ?? false;
+    gachaState.visibleStatTools = raw.visibleStatTools ?? [];
     // Restore manifested tools from previous session
     for (const def of raw.manifestedTools ?? []) {
       if (!CORE_TOOL_NAMES.has(def.toolName)) {
@@ -74,6 +76,19 @@ export function loadGachaState(): void {
   } catch (err) {
     console.error('Failed to load gacha state:', err);
   }
+}
+
+// Picks and locks 1 stat tool from each of the top 2 stats. Call once per reroll — stable until next roll.
+export function pickVisibleStatTools(): void {
+  if (!S.currentBuddy) { gachaState.visibleStatTools = []; return; }
+  const sorted = (Object.entries(S.currentBuddy.stats) as [keyof typeof STAT_TOOLS_MAP, number][])
+    .sort((a, b) => b[1] - a[1]);
+  const picked: string[] = [];
+  for (const [stat] of sorted.slice(0, 2)) {
+    const pool = STAT_TOOLS_MAP[stat];
+    if (pool) picked.push(pool[Math.floor(Math.random() * pool.length)]!);
+  }
+  gachaState.visibleStatTools = picked;
 }
 
 // --- Dynamic tool system ---

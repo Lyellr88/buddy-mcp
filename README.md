@@ -78,7 +78,7 @@ Each buddy has 5 stats — **Debugging, Patience, Chaos, Wisdom, Snark** — wit
 | `reroll_buddy` | 🎲 Spin the wheel. Brute-forces a salt matching a random rare+ outcome and patches your binary. Close Claude and reopen to see it. |
 | `get_buddy_card` | 🪪 Display your current buddy card — species, rarity, stats, name, ASCII art, everything. |
 | `pet_buddy` | 🤚 Poke your buddy. Builds affection — every pet counts toward better reroll odds. 25/50/75 pet milestones unlock rarity bonuses. |
-| `buddy_speak` | 💬 Ask your buddy to say something. Personality-aligned, stat-influenced. |
+| `buddy_speak` | 💬 Ask your buddy to say something. Personality-aligned, stat-influenced. Output shown verbatim. |
 | `view_buddy_dex` | 📖 Browse every species you've ever rolled. Gotta catch 'em all. |
 | `export_buddy_card` | 🖼️ Export your full buddy card as an SVG image file. |
 | `export_buddy_sprite` | 🎨 Export just the buddy ASCII sprite as an SVG image file. |
@@ -87,7 +87,7 @@ Each buddy has 5 stats — **Debugging, Patience, Chaos, Wisdom, Snark** — wit
 
 ### Stat Personality Tools
 
-**20 baked-in tools** — one per stat context. Only **2 are visible** at a time: 1 randomly picked from each of your buddy's **top 2 stats by raw value**. The other 18 stay hidden. Every buddy shows a different pair.
+**20 baked-in tools** — one per stat context. Only **2 are visible** at a time: 1 randomly picked from each of your buddy's **top 2 stats by raw value**. The other 18 stay hidden. The visible pair is **locked per roll** — it doesn't change until you reroll. Every buddy shows a different pair.
 
 | Tool | Stat | What it does |
 |------|------|-------------|

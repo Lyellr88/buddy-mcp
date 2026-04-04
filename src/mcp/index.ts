@@ -12,25 +12,16 @@ import { loadPetConfigV2, saveProfile } from '@/config/pet-config.js';
 
 import type { GachaState, PendingPatch } from './state.js';
 import { S, gachaState, dynamicTools, server, GACHA_STATE_FILE, PENDING_PATCH_FILE } from './state.js';
-import { loadGachaState, saveGachaState } from './persistence.js';
+import { loadGachaState, saveGachaState, pickVisibleStatTools } from './persistence.js';
 import { autoManifestTools } from './tools/auto.js';
 import './tools/core.js'; // side-effect: registers all 9 core tools into dynamicTools
 import './tools/export.js'; // side-effect: registers export_buddy_card + export_buddy_sprite
 import './tools/interact.js'; // side-effect: registers activate_buddy_interact + deactivate_buddy_interact
-import { STAT_TOOL_NAMES, STAT_TOOLS_MAP } from './tools/stats.js'; // side-effect: registers 10 stat tools
+import { STAT_TOOL_NAMES } from './tools/stats.js'; // side-effect: registers 20 stat tools
 
-// Returns 2 visible stat tool names: 1 randomly picked from each of the top 2 stats by raw value.
-// Returns an empty set when no buddy is active.
+// Returns the cached set of visible stat tool names — locked per roll, set by pickVisibleStatTools().
 function visibleStatTools(): Set<string> {
-  if (!S.currentBuddy) return new Set();
-  const sorted = (Object.entries(S.currentBuddy.stats) as [keyof typeof STAT_TOOLS_MAP, number][])
-    .sort((a, b) => b[1] - a[1]);
-  const visible = new Set<string>();
-  for (const [stat] of sorted.slice(0, 2)) {
-    const pair = STAT_TOOLS_MAP[stat];
-    if (pair) visible.add(pair[Math.floor(Math.random() * pair.length)]!);
-  }
-  return visible;
+  return new Set(gachaState.visibleStatTools);
 }
 
 // --- Server handlers ---
@@ -170,6 +161,12 @@ async function main() {
 
   // 5. Auto-manifest personality tools
   if (S.currentBuddy) autoManifestTools(S.currentBuddy);
+
+  // 6. Lock stat tools if not already set (first launch or old state file)
+  if (S.currentBuddy && gachaState.visibleStatTools.length === 0) {
+    pickVisibleStatTools();
+    saveGachaState();
+  }
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
