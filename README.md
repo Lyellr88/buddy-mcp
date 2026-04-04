@@ -1,4 +1,4 @@
-# buddy-mcp 🐾
+# buddy-mcp 
 
 > A gacha companion system for Claude Code. Roll for a rare buddy, patch it directly into the binary, collect 'em all.
 
@@ -69,25 +69,48 @@ Every reroll is a random pull from the pool. Rarity affects stat floors — lege
 
 **18 species:** duck · goose · blob · cat · dragon · octopus · owl · penguin · turtle · snail · ghost · axolotl · capybara · cactus · robot · rabbit · mushroom · chonk
 
-Each buddy has 5 stats — **Debugging, Patience, Chaos, Wisdom, Snark** — with a peak stat boosted high and a dump stat kept humble.
+Each buddy has 5 stats — **Debugging, Patience, Chaos, Wisdom, Snark** — with a peak stat boosted high and a dump stat kept humble. Personality shapes how `buddy_speak` and `pet_buddy` respond — a high-Chaos dragon hits different than a patient turtle.
 
 ---
-
-## Tools
 
 | Tool | What it does |
 |------|-------------|
 | `reroll_buddy` | 🎲 Spin the wheel. Brute-forces a salt matching a random rare+ outcome and patches your binary. Close Claude and reopen to see it. |
 | `get_buddy_card` | 🪪 Display your current buddy card — species, rarity, stats, name, ASCII art, everything. |
-| `pet_buddy` | 🤚 Poke your buddy. Reaction varies by mood and stats. Results not guaranteed. |
+| `pet_buddy` | 🤚 Poke your buddy. Builds affection — every pet counts toward better reroll odds. 25/50/75 pet milestones unlock rarity bonuses. |
 | `buddy_speak` | 💬 Ask your buddy to say something. Personality-aligned, stat-influenced. |
-| `vibe_check` | 🎯 The mystery action. Your buddy performs a random check based on stat alignment. |
-| `manifest_buddy_tool` | 🔧 Your buddy invents a new MCP tool based on their personality. High Chaos = unhinged tools. |
 | `view_buddy_dex` | 📖 Browse every species you've ever rolled. Gotta catch 'em all. |
-| `restore_buddy` | ↩️ Restore the original Claude Code companion from backup. |
 | `export_buddy_card` | 🖼️ Export your full buddy card as an SVG image file. |
 | `export_buddy_sprite` | 🎨 Export just the buddy ASCII sprite as an SVG image file. |
-| `initialize_buddy` | ⚙️ Manually sync buddy profile data. Use this if something's out of sync. |
+| `activate_buddy_interact` | 👁️ Start buddy observation mode. Your buddy will react to session events based on personality. |
+| `deactivate_buddy_interact` | 🔕 Stop observation mode. Your buddy goes quiet. |
+
+### Stat Personality Tools
+
+**20 baked-in tools** — one per stat context. Only **2 are visible** at a time: 1 randomly picked from each of your buddy's **top 2 stats by raw value**. The other 18 stay hidden. Every buddy shows a different pair.
+
+| Tool | Stat | What it does |
+|------|------|-------------|
+| `deep_trace` | Debugging | Focused bug hunting — curt, clinical, slightly haunted |
+| `trace_nightmare` | Debugging | When the trace stops making sense. Surreal debugging perspective |
+| `null_hunt` | Debugging | Hunt for null refs. Clinical. Relentless |
+| `stack_dive` | Debugging | Dive into the callstack. The bug is always deeper than you think |
+| `patience_check` | Patience | Check if your buddy is still willing to help |
+| `wait_wisdom` | Patience | Slow down. Receive patience-encoded insight |
+| `vibe_check` | Patience | The mystery action — your buddy reads the vibe. 5% cosmic event |
+| `still_point` | Patience | Stop. Be still. Let the answer come to you |
+| `chaos_audit` | Chaos | Unpredictable. Might help. Might not. Science |
+| `chaos_roulette` | Chaos | Spin the chaos wheel. Receive a wildly lateral suggestion |
+| `chaos_spark` | Chaos | Ignite a lateral idea. May or may not be relevant |
+| `entropy_roll` | Chaos | Roll against entropy. The universe responds |
+| `zen_consult` | Wisdom | Philosophical insight into your architecture |
+| `zen_mirror` | Wisdom | Turn the question inward. A reflection, not an answer |
+| `oracle_seek` | Wisdom | Seek the oracle. The answer is already inside you |
+| `deep_thought` | Wisdom | Think slower. The answer requires depth |
+| `snark_roast` | Snark | Light sarcastic critique of your current work |
+| `snark_savage` | Snark | No mercy. Full roast. For when you need the unfiltered truth |
+| `side_eye` | Snark | Your buddy looks at your code. Then at you. Then back at the code |
+| `snark_verdict` | Snark | Final ruling from the bench. The buddy has reviewed and judged |
 
 ---
 
@@ -111,7 +134,6 @@ reroll_buddy
     └─ Profile saved: species, rarity, stats, name, personality
 ```
 
-The patch is just a salt swap — a string replacement in the binary. The backup is written before any change so `restore_buddy` always works.
 
 ---
 
@@ -141,9 +163,7 @@ Then restart Claude Code.
 
 ## Personality
 
-Each buddy gets a name and a personality derived from their species. Personality shapes how `buddy_speak`, `pet_buddy`, and `vibe_check` respond — a high-Chaos dragon hits different than a patient turtle.
-
-Manifested tools (via `manifest_buddy_tool`) persist across restarts and live in `~/.buddy_mcp_tools.json`. High-Chaos buddies tend to invent tools that are... creative.
+Each buddy gets a name and a personality derived from their species. Personality shapes how `buddy_speak`, `pet_buddy`, and stat tools respond — a high-Chaos dragon hits different than a patient turtle.
 
 ---
 

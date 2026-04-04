@@ -16,12 +16,33 @@ import { loadGachaState, saveGachaState } from './persistence.js';
 import { autoManifestTools } from './tools/auto.js';
 import './tools/core.js'; // side-effect: registers all 9 core tools into dynamicTools
 import './tools/export.js'; // side-effect: registers export_buddy_card + export_buddy_sprite
+import './tools/interact.js'; // side-effect: registers activate_buddy_interact + deactivate_buddy_interact
+import { STAT_TOOL_NAMES, STAT_TOOLS_MAP } from './tools/stats.js'; // side-effect: registers 10 stat tools
+
+// Returns 2 visible stat tool names: 1 randomly picked from each of the top 2 stats by raw value.
+// Returns an empty set when no buddy is active.
+function visibleStatTools(): Set<string> {
+  if (!S.currentBuddy) return new Set();
+  const sorted = (Object.entries(S.currentBuddy.stats) as [keyof typeof STAT_TOOLS_MAP, number][])
+    .sort((a, b) => b[1] - a[1]);
+  const visible = new Set<string>();
+  for (const [stat] of sorted.slice(0, 2)) {
+    const pair = STAT_TOOLS_MAP[stat];
+    if (pair) visible.add(pair[Math.floor(Math.random() * pair.length)]!);
+  }
+  return visible;
+}
 
 // --- Server handlers ---
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: Array.from(dynamicTools.values()).map((t) => t.tool),
-}));
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  const visible = visibleStatTools();
+  return {
+    tools: Array.from(dynamicTools.values())
+      .filter((t) => !STAT_TOOL_NAMES.has(t.tool.name) || visible.has(t.tool.name))
+      .map((t) => t.tool),
+  };
+});
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const toolEntry = dynamicTools.get(request.params.name);

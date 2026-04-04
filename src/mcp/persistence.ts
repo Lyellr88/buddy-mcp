@@ -6,17 +6,40 @@ import { S, gachaState, dynamicTools, GACHA_STATE_FILE } from './state.js';
 // --- Persistence ---
 
 export const CORE_TOOL_NAMES = new Set([
-  'initialize_buddy',
   'get_buddy_card',
   'pet_buddy',
   'buddy_speak',
-  'manifest_buddy_tool',
-  'vibe_check',
   'reroll_buddy',
   'view_buddy_dex',
-  'restore_buddy',
   'export_buddy_card',
   'export_buddy_sprite',
+  'activate_buddy_interact',
+  'deactivate_buddy_interact',
+  // DEBUGGING tools
+  'deep_trace',
+  'trace_nightmare',
+  'null_hunt',
+  'stack_dive',
+  // PATIENCE tools
+  'patience_check',
+  'wait_wisdom',
+  'vibe_check',
+  'still_point',
+  // CHAOS tools
+  'chaos_audit',
+  'chaos_roulette',
+  'chaos_spark',
+  'entropy_roll',
+  // WISDOM tools
+  'zen_consult',
+  'zen_mirror',
+  'oracle_seek',
+  'deep_thought',
+  // SNARK tools
+  'snark_roast',
+  'snark_savage',
+  'side_eye',
+  'snark_verdict',
 ]);
 
 export function saveGachaState(): void {
@@ -40,6 +63,8 @@ export function loadGachaState(): void {
     gachaState.discoveredSpecies = raw.discoveredSpecies ?? [];
     gachaState.shinyCount = raw.shinyCount ?? 0;
     gachaState.binaryMtime = raw.binaryMtime ?? undefined;
+    gachaState.petCount = raw.petCount ?? 0;
+    gachaState.interactMode = raw.interactMode ?? false;
     // Restore manifested tools from previous session
     for (const def of raw.manifestedTools ?? []) {
       if (!CORE_TOOL_NAMES.has(def.toolName)) {

@@ -13,6 +13,8 @@ export interface GachaState {
   shinyCount: number;
   manifestedTools: ManifestedToolDefinition[];
   binaryMtime?: number;
+  petCount: number;
+  interactMode: boolean;
 }
 
 export interface ManifestedToolDefinition {
@@ -41,6 +43,8 @@ export const gachaState: GachaState = {
   discoveredSpecies: [],
   shinyCount: 0,
   manifestedTools: [],
+  petCount: 0,
+  interactMode: false,
 };
 
 export const dynamicTools: Map<

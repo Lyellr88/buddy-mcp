@@ -12,6 +12,8 @@ vi.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
 
 import { autoManifestTools, AUTO_TOOL_NAMES } from '@/mcp/tools/auto.js';
 import { dynamicTools, S, gachaState } from '@/mcp/state.js';
+import { CORE_TOOL_NAMES } from '@/mcp/persistence.js';
+import { STAT_TOOL_NAMES } from '@/mcp/tools/stats.js';
 
 function makeProfile(statsOverride: Record<string, number> = {}) {
   return {
@@ -33,7 +35,6 @@ function makeProfile(statsOverride: Record<string, number> = {}) {
 }
 
 beforeEach(() => {
-  dynamicTools.clear();
   S.currentBuddy = null;
   gachaState.discoveredSpecies = [];
   gachaState.shinyCount = 0;
@@ -52,75 +53,77 @@ describe('AUTO_TOOL_NAMES', () => {
     expect(AUTO_TOOL_NAMES.has('deep_trace')).toBe(true);
     expect(AUTO_TOOL_NAMES.has('patience_check')).toBe(true);
   });
+
+  it('all AUTO_TOOL_NAMES are now in CORE_TOOL_NAMES (superseded by stats.ts)', () => {
+    for (const name of AUTO_TOOL_NAMES) {
+      expect(CORE_TOOL_NAMES.has(name), `${name} should be in CORE_TOOL_NAMES`).toBe(true);
+    }
+  });
+
+  it('all AUTO_TOOL_NAMES are in STAT_TOOL_NAMES', () => {
+    for (const name of AUTO_TOOL_NAMES) {
+      expect(STAT_TOOL_NAMES.has(name), `${name} should be in STAT_TOOL_NAMES`).toBe(true);
+    }
+  });
 });
 
 // ─── autoManifestTools ─────────────────────────────────────────────────────
+// All 5 AUTO_TOOL_NAMES are now CORE_TOOL_NAMES (managed by stats.ts).
+// autoManifestTools() is a no-op for these tools — it skips deletion and
+// registration is blocked by CORE_TOOL_NAMES guard in registerManifestedTool.
 
 describe('autoManifestTools', () => {
-  it('registers tools for the top 3 dominant traits', () => {
-    const buddy = makeProfile({ CHAOS: 95, WISDOM: 90, SNARK: 85, DEBUGGING: 10, PATIENCE: 50 });
-    autoManifestTools(buddy);
-    expect(dynamicTools.has('chaos_audit')).toBe(true);
-    expect(dynamicTools.has('zen_consult')).toBe(true);
-    expect(dynamicTools.has('snark_roast')).toBe(true);
+  it('does not add any auto tool names via template registration (all are now core tools)', () => {
+    // Track how many dynamicTools entries exist before
+    const beforeCount = dynamicTools.size;
+
+    autoManifestTools(makeProfile({ CHAOS: 95, WISDOM: 90, SNARK: 85, DEBUGGING: 10, PATIENCE: 50 }));
+
+    // autoManifestTools should not add new entries — all its target names are CORE_TOOL_NAMES
+    expect(dynamicTools.size).toBe(beforeCount);
+
+    // Verify none were registered as template-manifested tools (logic would be non-empty)
+    for (const name of AUTO_TOOL_NAMES) {
+      const entry = dynamicTools.get(name);
+      if (entry) {
+        // If present (from stats.ts), logic should be empty string (not a template)
+        expect(entry._def.logic).toBe('');
+      }
+    }
   });
 
-  it('registers chaos_audit for a high-chaos buddy', () => {
-    autoManifestTools(makeProfile({ CHAOS: 99, DEBUGGING: 1, PATIENCE: 90, WISDOM: 1, SNARK: 1 }));
-    expect(dynamicTools.has('chaos_audit')).toBe(true);
-  });
+  it('does not delete stat tools from dynamicTools when called', () => {
+    // Stat tools are registered at module load time via stats.ts
+    // autoManifestTools should protect them from deletion
+    for (const name of STAT_TOOL_NAMES) {
+      expect(dynamicTools.has(name), `${name} should remain in dynamicTools after autoManifestTools`).toBe(true);
+    }
 
-  it('registers zen_consult for a high-wisdom buddy', () => {
-    autoManifestTools(makeProfile({ WISDOM: 99, CHAOS: 1, PATIENCE: 90, DEBUGGING: 1, SNARK: 1 }));
-    expect(dynamicTools.has('zen_consult')).toBe(true);
-  });
-
-  it('registers deep_trace for a high-debugging buddy', () => {
-    autoManifestTools(makeProfile({ DEBUGGING: 99, CHAOS: 1, PATIENCE: 90, WISDOM: 1, SNARK: 1 }));
-    expect(dynamicTools.has('deep_trace')).toBe(true);
-  });
-
-  it('registers snark_roast for a high-snark buddy', () => {
-    autoManifestTools(makeProfile({ SNARK: 99, CHAOS: 1, PATIENCE: 90, WISDOM: 1, DEBUGGING: 1 }));
-    expect(dynamicTools.has('snark_roast')).toBe(true);
-  });
-
-  it('registers patience_check for a very-low-patience buddy (inversion)', () => {
-    // PATIENCE=1 → effective 99 → should be top trait
-    autoManifestTools(makeProfile({ PATIENCE: 1, CHAOS: 10, WISDOM: 10, DEBUGGING: 10, SNARK: 10 }));
-    expect(dynamicTools.has('patience_check')).toBe(true);
-  });
-
-  it('registers at most 3 auto tools', () => {
     autoManifestTools(makeProfile());
-    const autoRegistered = [...dynamicTools.keys()].filter((k) => AUTO_TOOL_NAMES.has(k));
-    expect(autoRegistered.length).toBeLessThanOrEqual(3);
+
+    // All stat tools should still be present after autoManifestTools runs
+    for (const name of STAT_TOOL_NAMES) {
+      expect(dynamicTools.has(name), `${name} should still be in dynamicTools`).toBe(true);
+    }
   });
 
-  it('clears old auto tools on re-call and registers new ones', () => {
-    autoManifestTools(makeProfile({ CHAOS: 99, WISDOM: 80, SNARK: 70, DEBUGGING: 1, PATIENCE: 90 }));
-    expect(dynamicTools.has('chaos_audit')).toBe(true);
-
-    // Re-call with a completely different profile
-    autoManifestTools(makeProfile({ DEBUGGING: 99, WISDOM: 80, SNARK: 70, CHAOS: 1, PATIENCE: 90 }));
-    // chaos_audit should be gone (cleared), deep_trace should be in
-    expect(dynamicTools.has('chaos_audit')).toBe(false);
-    expect(dynamicTools.has('deep_trace')).toBe(true);
+  it('does not throw when called with any buddy profile', () => {
+    expect(() => autoManifestTools(makeProfile({ CHAOS: 99 }))).not.toThrow();
+    expect(() => autoManifestTools(makeProfile({ DEBUGGING: 99 }))).not.toThrow();
+    expect(() => autoManifestTools(makeProfile({ PATIENCE: 1 }))).not.toThrow();
   });
 
-  it('does not register duplicate tools in a single call', () => {
-    autoManifestTools(makeProfile({ CHAOS: 90, WISDOM: 85, SNARK: 80, DEBUGGING: 75, PATIENCE: 50 }));
-    const allKeys = [...dynamicTools.keys()];
-    const uniqueKeys = new Set(allKeys);
-    expect(allKeys.length).toBe(uniqueKeys.size);
-  });
+  it('does not affect non-auto custom tools in dynamicTools', () => {
+    // Simulate a user manifested tool
+    dynamicTools.set('my_custom_tool', {
+      tool: { name: 'my_custom_tool', description: 'test', inputSchema: { type: 'object', properties: {} } },
+      handler: async () => 'ok',
+      _def: { toolName: 'my_custom_tool', description: 'test', logic: 'ok', scope: 'local' },
+    });
 
-  it('registered tool has a non-empty description and logic', () => {
-    autoManifestTools(makeProfile({ WISDOM: 99, CHAOS: 1, PATIENCE: 90, DEBUGGING: 1, SNARK: 1 }));
-    const entry = dynamicTools.get('zen_consult');
-    expect(entry).toBeDefined();
-    expect(entry!._def.description.length).toBeGreaterThan(0);
-    expect(entry!._def.logic.length).toBeGreaterThan(0);
-    expect(entry!._def.scope).toBe('global');
+    autoManifestTools(makeProfile());
+
+    expect(dynamicTools.has('my_custom_tool')).toBe(true);
+    dynamicTools.delete('my_custom_tool');
   });
 });

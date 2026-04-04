@@ -89,3 +89,16 @@ export const RARITY_FLOOR: Record<Rarity, number> = {
   epic: 35,
   legendary: 50,
 };
+
+export const PET_MILESTONES = [
+  { threshold: 75, label: "🌟 Epic/Legendary heavily favoured — don't waste it!" },
+  { threshold: 50, label: '⭐ Rare+ guaranteed on next reroll!' },
+  { threshold: 25, label: '⭐ Uncommon+ guaranteed on next reroll!' },
+] as const;
+
+export function getAffectionWeights(petCount: number): Record<Rarity, number> {
+  if (petCount >= 75) return { common: 0, uncommon: 0, rare: 20, epic: 53, legendary: 27 };
+  if (petCount >= 50) return { common: 0, uncommon: 0, rare: 67, epic: 27, legendary: 7 };
+  if (petCount >= 25) return { common: 0, uncommon: 71, rare: 29, epic: 11, legendary: 3 };
+  return { ...RARITY_WEIGHTS };
+}

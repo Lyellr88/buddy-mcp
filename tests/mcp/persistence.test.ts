@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock fs before any imports that use it
 vi.mock('fs', () => ({
@@ -40,21 +40,29 @@ beforeEach(() => {
 
 describe('CORE_TOOL_NAMES', () => {
   const expected = [
-    'initialize_buddy',
     'get_buddy_card',
     'pet_buddy',
     'buddy_speak',
-    'manifest_buddy_tool',
-    'vibe_check',
     'reroll_buddy',
     'view_buddy_dex',
-    'restore_buddy',
     'export_buddy_card',
     'export_buddy_sprite',
+    'activate_buddy_interact',
+    'deactivate_buddy_interact',
+    // DEBUGGING
+    'deep_trace', 'trace_nightmare', 'null_hunt', 'stack_dive',
+    // PATIENCE
+    'patience_check', 'wait_wisdom', 'vibe_check', 'still_point',
+    // CHAOS
+    'chaos_audit', 'chaos_roulette', 'chaos_spark', 'entropy_roll',
+    // WISDOM
+    'zen_consult', 'zen_mirror', 'oracle_seek', 'deep_thought',
+    // SNARK
+    'snark_roast', 'snark_savage', 'side_eye', 'snark_verdict',
   ];
 
-  it('contains all 11 core tool names', () => {
-    expect(CORE_TOOL_NAMES.size).toBe(11);
+  it('contains all 29 core tool names', () => {
+    expect(CORE_TOOL_NAMES.size).toBe(29);
     for (const name of expected) {
       expect(CORE_TOOL_NAMES.has(name), `missing: ${name}`).toBe(true);
     }

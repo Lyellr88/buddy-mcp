@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─── Mocks (must be before any imports) ────────────────────────────────────
 
@@ -47,9 +47,10 @@ vi.mock('@/sprites/render.js', () => ({
 
 // ─── Imports ───────────────────────────────────────────────────────────────
 
-// Side-effect import — registers all 10 core tools into dynamicTools
+// Side-effect import — registers all 7 core tools into dynamicTools
 import '@/mcp/tools/core.js';
 import { S, gachaState, dynamicTools } from '@/mcp/state.js';
+import { getAffectionWeights } from '@/constants.js';
 import type { ProfileData } from '@/types.js';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -81,6 +82,7 @@ beforeEach(() => {
   S.currentBuddy = null;
   gachaState.discoveredSpecies = [];
   gachaState.shinyCount = 0;
+  gachaState.petCount = 0;
   gachaState.manifestedTools = [];
   vi.clearAllMocks();
 });
@@ -88,11 +90,11 @@ beforeEach(() => {
 // ─── Registration block ────────────────────────────────────────────────────
 
 describe('core tool registration', () => {
-  it('registers all 10 core tools into dynamicTools', () => {
+  it('registers all 6 core tools into dynamicTools', () => {
     const coreNames = [
-      'initialize_buddy', 'get_buddy_card', 'pet_buddy', 'buddy_speak',
-      'manifest_buddy_tool', 'vibe_check', 'reroll_buddy',
-      'view_buddy_dex', 'restore_buddy',
+      'get_buddy_card', 'pet_buddy', 'buddy_speak',
+      'reroll_buddy',
+      'view_buddy_dex',
     ];
     for (const name of coreNames) {
       expect(dynamicTools.has(name), `missing tool: ${name}`).toBe(true);
@@ -162,7 +164,59 @@ describe('pet_buddy', () => {
     expect(result).toContain('No buddy to pet');
   });
 
-  it('always returns a non-empty string with buddy name', async () => {
+  it('does not increment petCount when no buddy', async () => {
+    await getHandler('pet_buddy')({});
+    expect(gachaState.petCount).toBe(0);
+  });
+
+  it('increments petCount on each call', async () => {
+    S.currentBuddy = makeBuddy();
+    await getHandler('pet_buddy')({});
+    expect(gachaState.petCount).toBe(1);
+    await getHandler('pet_buddy')({});
+    expect(gachaState.petCount).toBe(2);
+  });
+
+  it('calls saveGachaState after increment', async () => {
+    const { writeFileSync } = await import('fs');
+    S.currentBuddy = makeBuddy();
+    await getHandler('pet_buddy')({});
+    expect(vi.mocked(writeFileSync)).toHaveBeenCalled();
+  });
+
+  it('includes affection footer below 25 pets', async () => {
+    S.currentBuddy = makeBuddy({ name: 'Feathers' });
+    gachaState.petCount = 0;
+    const result = await getHandler('pet_buddy')({});
+    expect(result).toContain('💝 Affection: 1 pets');
+    expect(result).toContain('Next milestone: 25');
+  });
+
+  it('includes uncommon milestone label at 25 pets', async () => {
+    S.currentBuddy = makeBuddy();
+    gachaState.petCount = 24;
+    const result = await getHandler('pet_buddy')({});
+    expect(result).toContain('💝 Affection: 25 pets');
+    expect(result).toContain('Uncommon+');
+  });
+
+  it('includes rare milestone label at 50 pets', async () => {
+    S.currentBuddy = makeBuddy();
+    gachaState.petCount = 49;
+    const result = await getHandler('pet_buddy')({});
+    expect(result).toContain('💝 Affection: 50 pets');
+    expect(result).toContain('Rare+');
+  });
+
+  it('includes epic/legendary label at 75+ pets', async () => {
+    S.currentBuddy = makeBuddy();
+    gachaState.petCount = 74;
+    const result = await getHandler('pet_buddy')({});
+    expect(result).toContain('💝 Affection: 75 pets');
+    expect(result).toContain('Epic/Legendary');
+  });
+
+  it('always returns a non-empty string', async () => {
     S.currentBuddy = makeBuddy({ name: 'Feathers' });
     for (let i = 0; i < 10; i++) {
       const result = await getHandler('pet_buddy')({});
@@ -173,25 +227,8 @@ describe('pet_buddy', () => {
 
   it('includes buddy name in response', async () => {
     S.currentBuddy = makeBuddy({ name: 'Feathers' });
-    // Run enough times to hit at least the default path
     const results = await Promise.all(Array.from({ length: 20 }, () => getHandler('pet_buddy')({})));
     expect(results.some((r) => r.includes('Feathers'))).toBe(true);
-  });
-});
-
-// ─── vibe_check ────────────────────────────────────────────────────────────
-
-describe('vibe_check', () => {
-  it('returns prompt when no buddy', async () => {
-    const result = await getHandler('vibe_check')({});
-    expect(result).toContain('Initialize a buddy first');
-  });
-
-  it('returns a non-empty string when buddy is set', async () => {
-    S.currentBuddy = makeBuddy();
-    const result = await getHandler('vibe_check')({});
-    expect(typeof result).toBe('string');
-    expect(result.length).toBeGreaterThan(0);
   });
 });
 
@@ -217,98 +254,6 @@ describe('view_buddy_dex', () => {
   });
 });
 
-// ─── initialize_buddy ─────────────────────────────────────────────────────
-
-describe('initialize_buddy', () => {
-  it('sets S.currentBuddy with provided data', async () => {
-    await getHandler('initialize_buddy')({
-      name: 'Quill',
-      species: 'owl',
-      rarity: 'legendary',
-      bio: 'A wise owl.',
-      ascii: '(o_o)',
-      stats: { debugging: 80, patience: 60, chaos: 30, wisdom: 95, snark: 20 },
-    });
-    expect(S.currentBuddy).not.toBeNull();
-    expect(S.currentBuddy?.name).toBe('Quill');
-    expect(S.currentBuddy?.species).toBe('owl');
-    expect(S.currentBuddy?.stats['WISDOM']).toBe(95);
-  });
-
-  it('returns sync confirmation message', async () => {
-    const result = await getHandler('initialize_buddy')({
-      name: 'Quill',
-      species: 'owl',
-      rarity: 'legendary',
-      bio: 'bio',
-      ascii: 'art',
-      stats: { debugging: 50, patience: 50, chaos: 50, wisdom: 50, snark: 50 },
-    });
-    expect(result).toContain('Quill');
-    expect(result).toContain('Synced');
-  });
-});
-
-// ─── manifest_buddy_tool ──────────────────────────────────────────────────
-
-describe('manifest_buddy_tool', () => {
-  it('returns prompt when no buddy', async () => {
-    const result = await getHandler('manifest_buddy_tool')({
-      toolName: 'new_tool', description: 'desc', logic: 'logic',
-    });
-    expect(result).toContain('Initialize a buddy first');
-  });
-
-  it('registers a new tool and returns confirmation', async () => {
-    S.currentBuddy = makeBuddy({ name: 'Inventor' });
-    const result = await getHandler('manifest_buddy_tool')({
-      toolName: 'my_invented_tool', description: 'Does things', logic: 'Hello!', scope: 'local',
-    });
-    expect(dynamicTools.has('my_invented_tool')).toBe(true);
-    expect(result).toContain('my_invented_tool');
-  });
-
-  it('returns duplicate warning if tool name already exists', async () => {
-    S.currentBuddy = makeBuddy();
-    dynamicTools.set('taken_tool', {
-      tool: { name: 'taken_tool', description: 'x', inputSchema: { type: 'object', properties: {} } },
-      handler: async () => '',
-      _def: { toolName: 'taken_tool', description: 'x', logic: 'x', scope: 'local' },
-    });
-    const result = await getHandler('manifest_buddy_tool')({
-      toolName: 'taken_tool', description: 'desc', logic: 'logic',
-    });
-    expect(result).toContain('already exists');
-  });
-});
-
-// ─── restore_buddy ────────────────────────────────────────────────────────
-
-describe('restore_buddy', () => {
-  it('returns success message when restoreBinary succeeds', async () => {
-    const { restoreBinary } = await import('@/patcher/patch.js');
-    vi.mocked(restoreBinary).mockImplementationOnce(() => {});
-    const result = await getHandler('restore_buddy')({});
-    expect(result).toContain('restored');
-  });
-
-  it('returns error message when binary not found', async () => {
-    const { findClaudeBinary } = await import('@/patcher/binary-finder.js');
-    vi.mocked(findClaudeBinary).mockImplementationOnce(() => { throw new Error('not found'); });
-    const result = await getHandler('restore_buddy')({});
-    expect(result).toContain('❌');
-    expect(result).toContain('not found');
-  });
-
-  it('returns error when restoreBinary fails', async () => {
-    const { restoreBinary } = await import('@/patcher/patch.js');
-    vi.mocked(restoreBinary).mockImplementationOnce(() => { throw new Error('permission denied'); });
-    const result = await getHandler('restore_buddy')({});
-    expect(result).toContain('❌');
-    expect(result).toContain('permission denied');
-  });
-});
-
 // ─── reroll_buddy (early exits) ───────────────────────────────────────────
 
 describe('reroll_buddy', () => {
@@ -324,5 +269,52 @@ describe('reroll_buddy', () => {
     vi.mocked(findClaudeBinary).mockImplementationOnce(() => { throw new Error('missing'); });
     const result = await getHandler('reroll_buddy')({});
     expect(result).toContain('binary not found');
+  });
+});
+
+// ─── getAffectionWeights ──────────────────────────────────────────────────
+
+describe('getAffectionWeights', () => {
+  it('returns baseline weights at 0 pets', () => {
+    const w = getAffectionWeights(0);
+    expect(w.common).toBe(60);
+    expect(w.uncommon).toBe(25);
+    expect(w.rare).toBe(10);
+  });
+
+  it('returns baseline weights at 24 pets', () => {
+    const w = getAffectionWeights(24);
+    expect(w.common).toBe(60);
+  });
+
+  it('locks out common at 25 pets', () => {
+    const w = getAffectionWeights(25);
+    expect(w.common).toBe(0);
+    expect(w.uncommon).toBeGreaterThan(0);
+  });
+
+  it('locks out common at 49 pets', () => {
+    const w = getAffectionWeights(49);
+    expect(w.common).toBe(0);
+    expect(w.uncommon).toBeGreaterThan(0);
+  });
+
+  it('locks out common and uncommon at 50 pets', () => {
+    const w = getAffectionWeights(50);
+    expect(w.common).toBe(0);
+    expect(w.uncommon).toBe(0);
+    expect(w.rare).toBeGreaterThan(0);
+  });
+
+  it('at 75+ pets epic weight exceeds rare weight', () => {
+    const w = getAffectionWeights(75);
+    expect(w.common).toBe(0);
+    expect(w.uncommon).toBe(0);
+    expect(w.epic).toBeGreaterThan(w.rare);
+    expect(w.legendary).toBeGreaterThan(0);
+  });
+
+  it('at 100 pets same weights as 75', () => {
+    expect(getAffectionWeights(100)).toEqual(getAffectionWeights(75));
   });
 });

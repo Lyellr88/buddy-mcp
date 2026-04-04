@@ -1,21 +1,21 @@
-import { writeFileSync, existsSync, statSync } from 'fs';
+﻿import { writeFileSync, existsSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 
-import type { Bones, DesiredTraits, ProfileData, Rarity, StatName } from '@/types.js';
-import { SPECIES, RARITIES, RARITY_WEIGHTS, EYES, HATS, ORIGINAL_SALT } from '@/constants.js';
+import type { Bones, DesiredTraits, ProfileData } from '@/types.js';
+import { SPECIES, RARITIES, EYES, HATS, ORIGINAL_SALT, getAffectionWeights, PET_MILESTONES } from '@/constants.js';
 import { DEFAULT_PERSONALITIES, getPersonalityRemark } from '@/personalities.js';
 import { renderSprite } from '@/sprites/render.js';
 import { findSalt } from '@/finder/orchestrator.js';
 import { findClaudeBinary } from '@/patcher/binary-finder.js';
-import { patchBinary, restoreBinary } from '@/patcher/patch.js';
+import { patchBinary } from '@/patcher/patch.js';
 import { getClaudeUserId, getCompanionName } from '@/config/claude-config.js';
 import { loadPetConfigV2, saveProfile } from '@/config/pet-config.js';
 
 import type { PendingPatch } from '../state.js';
 import { S, gachaState, dynamicTools, PENDING_PATCH_FILE } from '../state.js';
-import { saveGachaState, registerManifestedTool } from '../persistence.js';
+import { saveGachaState } from '../persistence.js';
 import { autoManifestTools } from './auto.js';
 
 // --- Core tool handlers ---
@@ -23,59 +23,6 @@ import { autoManifestTools } from './auto.js';
 function statBar(v: number): string {
   return '█'.repeat(Math.floor(v / 10)) + '░'.repeat(10 - Math.floor(v / 10));
 }
-
-const initializeBuddyTool = {
-  tool: {
-    name: 'initialize_buddy',
-    description: "Sync your buddy's profile info manually.",
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        name: { type: 'string' },
-        species: { type: 'string' },
-        rarity: { type: 'string' },
-        bio: { type: 'string' },
-        ascii: { type: 'string' },
-        stats: {
-          type: 'object',
-          properties: {
-            debugging: { type: 'number' },
-            patience: { type: 'number' },
-            chaos: { type: 'number' },
-            wisdom: { type: 'number' },
-            snark: { type: 'number' },
-          },
-          required: ['debugging', 'patience', 'chaos', 'wisdom', 'snark'],
-        },
-      },
-      required: ['name', 'species', 'rarity', 'bio', 'ascii', 'stats'],
-    },
-  },
-  handler: async (args: Record<string, unknown>) => {
-    const s = args.stats as Record<string, number>;
-    const stats: Partial<Record<StatName, number>> = {
-      DEBUGGING: s['debugging'] ?? 50,
-      PATIENCE: s['patience'] ?? 50,
-      CHAOS: s['chaos'] ?? 50,
-      WISDOM: s['wisdom'] ?? 50,
-      SNARK: s['snark'] ?? 50,
-    };
-    S.currentBuddy = {
-      salt: ORIGINAL_SALT,
-      species: String(args['species'] ?? 'capybara') as ProfileData['species'],
-      rarity: String(args['rarity'] ?? 'common') as Rarity,
-      eye: '·',
-      hat: 'none',
-      shiny: false,
-      stats,
-      name: String(args['name'] ?? 'Buddy'),
-      personality: String(args['personality'] ?? ''),
-      createdAt: new Date().toISOString(),
-    };
-    saveGachaState();
-    return `✨ Buddy Profile Synced: ${S.currentBuddy.name}`;
-  },
-};
 
 const getBuddyCardTool = {
   tool: {
@@ -143,43 +90,13 @@ const buddySpeakTool = {
   },
 };
 
-const manifestBuddyTool = {
-  tool: {
-    name: 'manifest_buddy_tool',
-    description:
-      "The buddy 'invents' a new tool based on its current personality and stats. High Chaos/Snark buddies create wilder tools. Supports template tags like {buddy.name} and {args.propertyName} in logic strings.",
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        toolName: { type: 'string', description: 'Snake_case name' },
-        description: { type: 'string', description: 'What the buddy tells the user it does' },
-        logic: {
-          type: 'string',
-          description: 'The response message. Can use {buddy.name}, {buddy.stats.chaos}, or {args.myArg}',
-        },
-        scope: { type: 'string', enum: ['global', 'local'], default: 'local' },
-        inputSchema: { type: 'object' },
-      },
-      required: ['toolName', 'description', 'logic'],
-    },
-  },
-  handler: async (args: Record<string, unknown>) => {
-    if (!S.currentBuddy) return 'Initialize a buddy first.';
-    const toolName = String(args['toolName'] ?? '');
-    const scope = (args['scope'] as 'global' | 'local') ?? 'local';
-    if (dynamicTools.has(toolName)) return `Tool '${toolName}' already exists!`;
+// --- Pet affection footer helper ---
 
-    registerManifestedTool(
-      toolName,
-      String(args['description'] ?? ''),
-      String(args['logic'] ?? ''),
-      scope,
-      args['inputSchema'] as Record<string, unknown> | undefined,
-    );
-    saveGachaState();
-    return `✨ ${S.currentBuddy.name ?? 'Buddy'} manifested a ${scope} tool: '${toolName}'! It now supports dynamic templating.`;
-  },
-};
+function buildPetFooter(count: number): string {
+  const milestone = PET_MILESTONES.find(m => count >= m.threshold);
+  if (milestone) return `\n\n💝 Affection: ${count} pets  │  ${milestone.label}`;
+  return `\n\n💝 Affection: ${count} pets  │  Next milestone: 25 (uncommon+ guaranteed)`;
+}
 
 const petBuddyTool = {
   tool: {
@@ -190,40 +107,28 @@ const petBuddyTool = {
   handler: async () => {
     if (!S.currentBuddy) return 'No buddy to pet!';
     const b = S.currentBuddy;
+
+    gachaState.petCount++;
+    saveGachaState();
+
     const roll = Math.random() * 100;
     const snark = b.stats['SNARK'] ?? 0;
     const patience = b.stats['PATIENCE'] ?? 50;
     const chaos = b.stats['CHAOS'] ?? 0;
     const name = b.name ?? 'Buddy';
 
-    if (roll < 10) return `✨ RARE EVENT ✨ ${name} lets you scratch that one spot behind the ears. For a brief moment, the Snark vanishes. (+1 temporary Dopamine)`;
-    if (snark > 80 && roll < 50) return `${name} swiped at your cursor. "I'm not a toy. Do I look like I have time for this?"`;
-    if (patience < 25 && roll < 50) return `${name} is vibrating so fast they're blurring. "NOT NOW. I CAN SEE THE MATRIX AND IT IS FULL OF SEMICOLONS."`;
-    if (chaos > 70 && roll < 30) return `${name} makes a sound like a dial-up modem. You're pretty sure they just rewrote your history file.`;
+    let reaction: string;
+    if (roll < 10) reaction = `✨ RARE EVENT ✨ ${name} lets you scratch that one spot behind the ears. For a brief moment, the Snark vanishes. (+1 temporary Dopamine)`;
+    else if (snark > 80 && roll < 50) reaction = `${name} swiped at your cursor. "I'm not a toy. Do I look like I have time for this?"`;
+    else if (patience < 25 && roll < 50) reaction = `${name} is vibrating so fast they're blurring. "NOT NOW. I CAN SEE THE MATRIX AND IT IS FULL OF SEMICOLONS."`;
+    else if (chaos > 70 && roll < 30) reaction = `${name} makes a sound like a dial-up modem. You're pretty sure they just rewrote your history file.`;
+    else reaction = `${name} lets out a soft, digital chirp. *happy ${b.species} noises*`;
 
-    return `${name} lets out a soft, digital chirp. *happy ${b.species} noises*`;
+    return `${reaction}${buildPetFooter(gachaState.petCount)}`;
   },
 };
 
-const vibeCheckTool = {
-  tool: {
-    name: 'vibe_check',
-    description: 'The ultimate mystery action. The buddy performs a random check based on the alignment of your stats.',
-    inputSchema: { type: 'object' as const, properties: {} },
-  },
-  handler: async () => {
-    if (!S.currentBuddy) return 'Initialize a buddy first!';
-    const b = S.currentBuddy;
-    const r = Math.random() * 100;
-
-    if (r < 5) return `🌌 COSMIC EVENT 🌌\n\n${b.name ?? 'Buddy'} has transcended the terminal. They say: "I have seen the end of the universe. It's written in COBOL. We should probably use more Python."`;
-
-    const remark = getPersonalityRemark(b);
-    return `[Vibe Check: ${b.name ?? 'Buddy'}]\n\n${remark}`;
-  },
-};
-
-// --- rollRandomDesired helper ---
+// --- rollRandomDesiredWithAffection helper ---
 
 function weightedPick<T extends string>(items: readonly T[], weights: Record<T, number>): T {
   const total = items.reduce((sum, item) => sum + (weights[item] ?? 0), 0);
@@ -236,8 +141,9 @@ function weightedPick<T extends string>(items: readonly T[], weights: Record<T, 
   return fallback !== undefined ? fallback : (items[0] as T);
 }
 
-function rollRandomDesired(): DesiredTraits {
-  const rarity = weightedPick(RARITIES, RARITY_WEIGHTS);
+function rollRandomDesiredWithAffection(petCount: number): DesiredTraits {
+  const weights = getAffectionWeights(petCount);
+  const rarity = weightedPick(RARITIES.filter(r => weights[r] > 0), weights);
   return {
     species: SPECIES[Math.floor(Math.random() * SPECIES.length)] ?? 'capybara',
     rarity,
@@ -269,7 +175,7 @@ const rerollBuddyTool = {
     }
 
     // 4. Roll random desired traits
-    const desired = rollRandomDesired();
+    const desired = rollRandomDesiredWithAffection(gachaState.petCount);
 
     // 5. Find salt — pass binaryPath so workers use the correct hash (FNV-1a on Windows .js, wyhash elsewhere)
     let finderResult: Awaited<ReturnType<typeof findSalt>>;
@@ -349,6 +255,8 @@ const rerollBuddyTool = {
       };
       try {
         writeFileSync(PENDING_PATCH_FILE, JSON.stringify(pending, null, 2));
+        gachaState.petCount = 0;
+        saveGachaState();
       } catch (err: unknown) {
         return `❌ Could not save pending patch: ${(err as Error).message}`;
       }
@@ -382,6 +290,7 @@ const rerollBuddyTool = {
     }
     if (profile.shiny) gachaState.shinyCount++;
     gachaState.binaryMtime = statSync(binaryPath).mtimeMs;
+    gachaState.petCount = 0;
     saveGachaState();
     autoManifestTools(S.currentBuddy);
 
@@ -414,36 +323,12 @@ const viewBuddyDexTool = {
   },
 };
 
-const restoreBuddyTool = {
-  tool: {
-    name: 'restore_buddy',
-    description: 'Restore the original Claude Code buddy from backup.',
-    inputSchema: { type: 'object' as const, properties: {} },
-  },
-  handler: async () => {
-    let binaryPath: string;
-    try {
-      binaryPath = findClaudeBinary();
-    } catch (err: unknown) {
-      return `❌ Claude Code binary not found: ${(err as Error).message}`;
-    }
-    try {
-      restoreBinary(binaryPath);
-      return '✅ Original buddy restored. Restart Claude Code to see the change.';
-    } catch (err: unknown) {
-      return `❌ Restore failed: ${(err as Error).message}`;
-    }
-  },
-};
+
 
 // --- Register core tools ---
 
-dynamicTools.set('initialize_buddy', { ...initializeBuddyTool, _def: { toolName: 'initialize_buddy', description: 'Core: Init', logic: 'N/A', scope: 'global' } });
 dynamicTools.set('get_buddy_card', { ...getBuddyCardTool, _def: { toolName: 'get_buddy_card', description: 'Core: Card', logic: 'N/A', scope: 'global' } });
 dynamicTools.set('pet_buddy', { ...petBuddyTool, _def: { toolName: 'pet_buddy', description: 'Core: Pet', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('vibe_check', { ...vibeCheckTool, _def: { toolName: 'vibe_check', description: 'Core: Mystery', logic: 'N/A', scope: 'global' } });
 dynamicTools.set('buddy_speak', { ...buddySpeakTool, _def: { toolName: 'buddy_speak', description: 'Core: Speak', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('manifest_buddy_tool', { ...manifestBuddyTool, _def: { toolName: 'manifest_buddy_tool', description: 'Core: Manifest', logic: 'N/A', scope: 'global' } });
 dynamicTools.set('reroll_buddy', { ...rerollBuddyTool, _def: { toolName: 'reroll_buddy', description: 'Core: Gacha', logic: 'N/A', scope: 'global' } });
 dynamicTools.set('view_buddy_dex', { ...viewBuddyDexTool, _def: { toolName: 'view_buddy_dex', description: 'Core: Dex', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('restore_buddy', { ...restoreBuddyTool, _def: { toolName: 'restore_buddy', description: 'Core: Restore', logic: 'N/A', scope: 'global' } });
