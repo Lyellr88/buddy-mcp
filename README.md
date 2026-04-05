@@ -50,13 +50,15 @@ node dist/tui/cli.js
 ### 1. Prerequisites
 
 - [Claude Code CLI](https://claude.ai/download) installed
-- [Node.js](https://nodejs.org/) v20+
-- [Bun](https://bun.sh/) installed and on PATH (required for wyhash on native Claude installs)
+- [Node.js](https://nodejs.org/) v20+ — required for everything
+- [Bun](https://bun.sh/) — required for salt brute-forcing (rerolling) + full animated TUI
+
+> **Note:** npm packaging is coming soon. For now, clone and build manually as below.
 
 ### 2. Clone & Build
 
 ```bash
-git clone https://github.com/lyell/buddy-mcp
+git clone https://github.com/Lyellr88/buddy-mcp
 cd buddy-mcp
 npm install
 npm run build
@@ -75,6 +77,20 @@ Replace `/absolute/path/to/buddy-mcp` with the actual path on your machine.
 Open Claude Code and ask: **"show me my buddy card"**
 
 You should see a card with your current companion's species, rarity, and stats. You're in.
+
+### 5. Launch the TUI Builder (optional)
+
+For the full interactive builder with live preview:
+
+```bash
+bun dist/tui/cli.js
+```
+
+Or via npm script (auto-detects Bun, falls back to basic prompts if not installed):
+
+```bash
+npm run builder
+```
 
 ---
 
