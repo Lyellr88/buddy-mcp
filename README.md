@@ -29,6 +29,8 @@ buddy-mcp isn’t just a UI mod. It’s a deterministic companion system layered
 - Locked tool sets per roll (no session drift)  
 - A self-healing patch pipeline that detects, restores, and reapplies across updates  
 
+Lightweight by design with minimal token usage and data footprint. Most features operate inline through message augmentation rather than separate invocation flows.
+
 Built to be fast, local-first, and resilient to change.
 
 ---
