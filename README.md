@@ -20,6 +20,19 @@ No companion server. No cloud. Just you, your binary, and the gacha gods.
 
 ---
 
+## Developer Insight
+
+buddy-mcp isn’t just a UI mod. It’s a deterministic companion system layered on top of Claude Code’s binary, with:
+
+- Rerollable personalities and stat-bound behaviors  
+- Persistent state and BuddyDex tracking  
+- Locked tool sets per roll (no session drift)  
+- A self-healing patch pipeline that detects, restores, and reapplies across updates  
+
+Built to be fast, local-first, and resilient to change.
+
+---
+
 ## TUI Builder (`buddy-mcp-build`)
 
 Want more control? Use the interactive builder:
