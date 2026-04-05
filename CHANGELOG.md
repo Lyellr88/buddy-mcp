@@ -125,6 +125,7 @@
 - Updated: `tests/mcp/auto.test.ts` — rewrote to document no-op behavior
 - Updated: `tests/mcp/persistence.test.ts` — CORE_TOOL_NAMES count 11 → 29, full expected array with all stat tool names
 
+---
 
 ### v0.15.0 — Stat Locking, Salt Detection & Polish
 
@@ -156,3 +157,41 @@
 
 #### Reroll Message Cleanup
 - Removed 💡 Stat tools may have changed — open /mcp hint from both reroll success messages (stat tools now locked per roll, hint was obsolete)
+
+---
+
+### v0.16.0 — TUI Builder + Smart Backup Chain
+
+#### TUI Builder (`buddy-mcp-build`)
+- Integrated `src/tui/` from any-buddy as a standalone CLI power-user tool
+- New binary: `buddy-mcp-build` — run from any shell, no global install required (`node dist/tui/cli.js`)
+- Subcommand dispatch: `restore`, `rehatch`, `current`, `preview`, `share` → interactive start screen default
+- Full command set included: `browse presets`, `build your own`, `saved buddies`, `share` (clipboard ASCII), `current`, `preview`
+- All `any-buddy` string references replaced with `buddy-mcp`/`buddy-mcp-build` across 8 TUI files
+- Hook calls fixed to resolve MCP path (`../../mcp/index.js`) — hook points to MCP server, not TUI
+- `restoreProfileIdentity` added to hook re-apply path (renames + sets personality after patch)
+- New deps: `@inquirer/prompts` (Node fallback prompts), `@opentui/core` (optional, Bun-only live preview)
+- TUI ↔ MCP bridge: `~/.buddy-mcp.json` — zero IPC, zero coupling
+
+#### Smart Backup Chain — Poison Prevention
+- `patchBinary()` now only writes `.buddy-mcp-bak` when the binary contains `ORIGINAL_SALT` — prevents backing up a post-update (poisoned) binary
+- `findRestorableBackup()` — new export in `patch.ts`; tries `.buddy-mcp-bak` then `.anybuddy-bak`, validates `ORIGINAL_SALT` presence before accepting either
+- `applyPendingPatch()` restore path: after both `verifySalt` checks fail, auto-calls `findRestorableBackup()` → `restoreBinary()` → `patchBinary()` without user intervention
+- Result: hook fires after Claude auto-update → restores best valid backup → re-patches → user never sees a failure
+
+#### Tests
+- 330 → 343 tests passing (29 test files)
+- New file: `tests/patcher/patch.test.ts` — 13 tests covering `patchBinary`, `findRestorableBackup`, `restoreBinary`
+  - Salt swap correctness (3 occurrences replaced)
+  - Salt length mismatch throws
+  - Salt not found throws
+  - Backup written only when `ORIGINAL_SALT` present
+  - Backup NOT written when binary has no `ORIGINAL_SALT` (poison prevention)
+  - `findRestorableBackup` returns null with no backups
+  - `findRestorableBackup` returns `.buddy-mcp-bak` when valid
+  - `findRestorableBackup` skips poisoned `.buddy-mcp-bak`, falls back to `.anybuddy-bak`
+  - `findRestorableBackup` returns null when both backups are invalid
+  - Unreadable backup skipped gracefully (directory collision trick)
+  - `restoreBinary` restores from `.buddy-mcp-bak`
+  - `restoreBinary` falls back to `.anybuddy-bak` when primary is poisoned
+  - `restoreBinary` throws when no valid backup exists

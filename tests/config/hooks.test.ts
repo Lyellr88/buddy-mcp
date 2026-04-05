@@ -26,30 +26,31 @@ describe('hooks', () => {
   });
 
   it('installHook creates settings with hook entry', () => {
-    installHook();
+    installHook('/path/to/dist/mcp/index.js');
     expect(isHookInstalled()).toBe(true);
 
     const settings = getClaudeSettings();
     expect(settings.hooks?.SessionStart).toHaveLength(1);
-    expect(settings.hooks?.SessionStart?.[0].hooks[0].command).toBe('buddy-mcp apply --silent');
+    expect(settings.hooks?.SessionStart?.[0].hooks[0].command).toContain('apply --silent');
+    expect(settings.hooks?.SessionStart?.[0].hooks[0].command).toContain('index.js');
   });
 
   it('installHook is idempotent', () => {
-    installHook();
-    installHook();
+    installHook('/path/to/dist/mcp/index.js');
+    installHook('/path/to/dist/mcp/index.js');
     const settings = getClaudeSettings();
     expect(settings.hooks?.SessionStart).toHaveLength(1);
   });
 
   it('removeHook removes the hook entry', () => {
-    installHook();
+    installHook('/path/to/dist/mcp/index.js');
     expect(isHookInstalled()).toBe(true);
     removeHook();
     expect(isHookInstalled()).toBe(false);
   });
 
   it('removeHook cleans up empty hooks object', () => {
-    installHook();
+    installHook('/path/to/dist/mcp/index.js');
     removeHook();
     const settings = getClaudeSettings();
     expect(settings.hooks).toBeUndefined();
@@ -60,7 +61,7 @@ describe('hooks', () => {
   });
 
   it('creates ~/.claude directory if missing', () => {
-    installHook();
+    installHook('/path/to/dist/mcp/index.js');
     const raw = readFileSync(join(tempDir, '.claude', 'settings.json'), 'utf-8');
     const parsed = JSON.parse(raw);
     expect(parsed.hooks.SessionStart).toBeDefined();
@@ -75,7 +76,7 @@ describe('hooks', () => {
       JSON.stringify(existing, null, 2) + '\n',
     );
 
-    installHook();
+    installHook('/path/to/dist/mcp/index.js');
     const settings = getClaudeSettings();
     expect((settings as Record<string, unknown>).someOtherSetting).toBe(true);
     expect(isHookInstalled()).toBe(true);

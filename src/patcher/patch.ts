@@ -50,7 +50,9 @@ export function patchBinary(binaryPath: string, oldSalt: string, newSalt: string
   }
 
   const backupPath = binaryPath + '.buddy-mcp-bak';
-  if (!existsSync(backupPath)) {
+  // Only write backup if this binary has the original salt — prevents poisoning
+  // the backup with a post-update binary that's already broken.
+  if (!existsSync(backupPath) && findAllOccurrences(buf, ORIGINAL_SALT).length > 0) {
     copyFileSync(binaryPath, backupPath);
   }
 
@@ -105,10 +107,32 @@ export function patchBinary(binaryPath: string, oldSalt: string, newSalt: string
   };
 }
 
+// Returns the best available backup path that contains ORIGINAL_SALT, or null.
+export function findRestorableBackup(binaryPath: string): string | null {
+  const candidates = [
+    binaryPath + '.buddy-mcp-bak',
+    binaryPath + '.anybuddy-bak',
+  ];
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) continue;
+    try {
+      const buf = readFileSync(candidate);
+      if (findAllOccurrences(buf, ORIGINAL_SALT).length > 0) return candidate;
+    } catch {
+      /* skip unreadable backups */
+    }
+  }
+  return null;
+}
+
 export function restoreBinary(binaryPath: string): true {
-  const backupPath = binaryPath + '.buddy-mcp-bak';
-  if (!existsSync(backupPath)) {
-    throw new Error('No backup found. Cannot restore.\n' + `  Expected: ${backupPath}`);
+  const backupPath = findRestorableBackup(binaryPath);
+  if (!backupPath) {
+    throw new Error(
+      'No valid backup found containing the original salt.\n' +
+        `  Tried: ${binaryPath}.buddy-mcp-bak, ${binaryPath}.anybuddy-bak\n` +
+        '  Try reinstalling Claude Code to get a fresh binary.',
+    );
   }
 
   const stats = statSync(backupPath);

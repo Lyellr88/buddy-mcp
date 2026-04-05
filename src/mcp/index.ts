@@ -6,9 +6,11 @@ import { ORIGINAL_SALT } from '@/constants.js';
 import { DEFAULT_PERSONALITIES } from '@/personalities.js';
 import { roll } from '@/generation/roll.js';
 import { findClaudeBinary } from '@/patcher/binary-finder.js';
-import { patchBinary } from '@/patcher/patch.js';
-import { getClaudeUserId, getCompanionName } from '@/config/claude-config.js';
+import { patchBinary, findRestorableBackup, restoreBinary } from '@/patcher/patch.js';
+import { verifySalt } from '@/patcher/salt-ops.js';
+import { getClaudeUserId, getCompanionName, renameCompanion, setCompanionPersonality } from '@/config/claude-config.js';
 import { loadPetConfigV2, saveProfile } from '@/config/pet-config.js';
+import { isHookInstalled, installHook } from '@/config/hooks.js';
 
 import type { GachaState, PendingPatch } from './state.js';
 import { S, gachaState, dynamicTools, server, GACHA_STATE_FILE, PENDING_PATCH_FILE } from './state.js';
@@ -46,59 +48,140 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// --- CLI: apply pending patch ---
-// Runs when invoked as: buddy-mcp apply
-// Patches the binary using the saved pending patch file, then exits.
+// --- CLI: apply pending patch or re-apply saved salt after update ---
+// Runs when invoked as: buddy-mcp apply or buddy-mcp apply --silent
+// Handles two cases:
+// 1. Pending patch waiting from reroll (reads ~/.buddy_mcp_pending.json)
+// 2. Hook-triggered re-apply after binary update (reads saved salt from pet config)
 
-function applyPendingPatch(): void {
-  if (!existsSync(PENDING_PATCH_FILE)) {
-    console.log('No pending patch found. Run reroll_buddy in Claude first.');
+function applyPendingPatch({ silent = false } = {}): void {
+  // First, try pending patch file (from reroll)
+  if (existsSync(PENDING_PATCH_FILE)) {
+    let pending: PendingPatch;
+    try {
+      pending = JSON.parse(readFileSync(PENDING_PATCH_FILE, 'utf-8')) as PendingPatch;
+    } catch {
+      if (!silent) console.error('❌ Pending patch file is corrupted. Delete ~/.buddy_mcp_pending.json and try again.');
+      process.exit(silent ? 0 : 1);
+    }
+
+    const { rarity, species, shiny } = pending.profile;
+    const shinyTag = shiny ? ' ✨ SHINY' : '';
+    if (!silent) console.log(`🎲 Applying pending patch — ${rarity} ${species}${shinyTag}...`);
+
+    try {
+      patchBinary(pending.binaryPath, pending.currentSalt, pending.salt);
+    } catch (err: unknown) {
+      if (!silent) {
+        console.error(`❌ Patch failed: ${(err as Error).message}`);
+        console.error('Make sure all Claude Code windows are fully closed, then try again.');
+      }
+      process.exit(silent ? 0 : 1);
+    }
+
+    saveProfile(pending.profile, { activate: true });
+
+    // Update gacha state file directly (no server in memory)
+    if (existsSync(GACHA_STATE_FILE)) {
+      try {
+        const raw = JSON.parse(readFileSync(GACHA_STATE_FILE, 'utf-8')) as GachaState;
+        if (!raw.discoveredSpecies.includes(pending.profile.species)) {
+          raw.discoveredSpecies.push(pending.profile.species);
+        }
+        if (pending.profile.shiny) raw.shinyCount = (raw.shinyCount ?? 0) + 1;
+        writeFileSync(GACHA_STATE_FILE, JSON.stringify(raw, null, 2));
+      } catch {
+        // Non-fatal — gacha state will self-heal on next server start
+      }
+    }
+
+    unlinkSync(PENDING_PATCH_FILE);
+    if (!silent) {
+      console.log(`✅ ${rarity} ${species}${shinyTag} is now active!`);
+      console.log('Restart Claude Code to see your new companion.');
+    }
+
+    // Install hook on successful apply (unless already installed)
+    if (!isHookInstalled()) {
+      try {
+        installHook(process.argv[1]);
+      } catch {
+        // Non-fatal — hook install failure shouldn't crash the apply
+      }
+    }
     return;
   }
 
-  let pending: PendingPatch;
-  try {
-    pending = JSON.parse(readFileSync(PENDING_PATCH_FILE, 'utf-8')) as PendingPatch;
-  } catch {
-    console.error('❌ Pending patch file is corrupted. Delete ~/.buddy_mcp_pending.json and try again.');
-    process.exit(1);
+  // No pending file — try hook-triggered re-apply after update
+  // Load saved salt from pet config
+  const petConfig = loadPetConfigV2();
+  if (!petConfig?.salt) {
+    if (!silent) console.log('No saved pet config. Run reroll_buddy in Claude first.');
+    process.exit(0);
   }
 
-  const { rarity, species, shiny } = pending.profile;
-  const shinyTag = shiny ? ' ✨ SHINY' : '';
-  console.log(`🎲 Applying pending patch — ${rarity} ${species}${shinyTag}...`);
-
+  let binaryPath: string;
   try {
-    patchBinary(pending.binaryPath, pending.currentSalt, pending.salt);
-  } catch (err: unknown) {
-    console.error(`❌ Patch failed: ${(err as Error).message}`);
-    console.error('Make sure all Claude Code windows are fully closed, then try again.');
-    process.exit(1);
+    binaryPath = findClaudeBinary();
+  } catch (err) {
+    if (!silent) console.error((err as Error).message);
+    process.exit(0);
   }
 
-  saveProfile(pending.profile, { activate: true });
+  // Fast path: check if our salt is already applied
+  const checkOurs = verifySalt(binaryPath, petConfig.salt);
+  if (checkOurs.found >= 3) {
+    if (!silent) console.log('✅ Pet already applied.');
+    return;
+  }
 
-  // Update gacha state file directly (no server in memory)
-  if (existsSync(GACHA_STATE_FILE)) {
+  // Try patching with ORIGINAL_SALT (fresh binary from update)
+  const checkOrig = verifySalt(binaryPath, ORIGINAL_SALT);
+  if (checkOrig.found >= 3) {
     try {
-      const raw = JSON.parse(readFileSync(GACHA_STATE_FILE, 'utf-8')) as GachaState;
-      if (!raw.discoveredSpecies.includes(pending.profile.species)) {
-        raw.discoveredSpecies.push(pending.profile.species);
-      }
-      if (pending.profile.shiny) raw.shinyCount = (raw.shinyCount ?? 0) + 1;
-      writeFileSync(GACHA_STATE_FILE, JSON.stringify(raw, null, 2));
-    } catch {
-      // Non-fatal — gacha state will self-heal on next server start
+      patchBinary(binaryPath, ORIGINAL_SALT, petConfig.salt);
+      // Restore companion identity from saved profile
+      const activeSalt = petConfig.activeProfile;
+      const profile = activeSalt ? petConfig.profiles[activeSalt] : undefined;
+      if (profile?.name) { try { renameCompanion(profile.name); } catch { /* non-fatal */ } }
+      if (profile?.personality) { try { setCompanionPersonality(profile.personality); } catch { /* non-fatal */ } }
+      if (!silent) console.log('✅ Pet re-patched after update.');
+      return;
+    } catch (err) {
+      if (!silent) console.error(`❌ Re-patch failed: ${(err as Error).message}`);
+      process.exit(silent ? 0 : 1);
     }
   }
 
-  unlinkSync(PENDING_PATCH_FILE);
-  console.log(`✅ ${rarity} ${species}${shinyTag} is now active!`);
-  console.log('Restart Claude Code to see your new companion.');
+  // Fallback: try restoring from any valid backup, then re-patch
+  const backupPath = findRestorableBackup(binaryPath);
+  if (backupPath) {
+    try {
+      restoreBinary(binaryPath);
+      patchBinary(binaryPath, ORIGINAL_SALT, petConfig.salt);
+      const activeSalt = petConfig.activeProfile;
+      const profile = activeSalt ? petConfig.profiles[activeSalt] : undefined;
+      if (profile?.name) { try { renameCompanion(profile.name); } catch { /* non-fatal */ } }
+      if (profile?.personality) { try { setCompanionPersonality(profile.personality); } catch { /* non-fatal */ } }
+      if (!silent) console.log('✅ Pet restored from backup and re-patched after update.');
+      return;
+    } catch (err) {
+      if (!silent) console.error(`❌ Restore+repatch failed: ${(err as Error).message}`);
+      process.exit(silent ? 0 : 1);
+    }
+  }
+
+  // Fallback: couldn't find a known salt or backup
+  if (!silent) {
+    console.error('⚠️  Could not find a known salt in binary or any valid backup.');
+    console.error('Run buddy-mcp-build restore, or reinstall Claude Code.');
+  }
+  process.exit(silent ? 0 : 1);
 }
 
 if (process.argv[2] === 'apply') {
-  applyPendingPatch();
+  const silent = process.argv.includes('--silent');
+  applyPendingPatch({ silent });
   process.exit(0);
 }
 

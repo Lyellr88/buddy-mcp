@@ -2,7 +2,7 @@
 // Detached background watcher — spawned by reroll_buddy when the binary is locked (Windows EPERM).
 // Polls every 2 seconds until Claude Code closes, then auto-applies the pending patch and exits.
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { patchBinary } from '@/patcher/patch.js';
@@ -59,14 +59,6 @@ async function main(): Promise<void> {
   const shinyTag = shiny ? ' ✨' : '';
   log(`Waiting for Claude to close — will auto-apply ${rarity} ${species}${shinyTag}...`);
 
-  // Track mtime so we can detect if Claude auto-updates the binary while we wait
-  let lastMtime = 0;
-  try {
-    lastMtime = statSync(pending.binaryPath).mtimeMs;
-  } catch {
-    // Non-fatal — mtime check is best-effort
-  }
-
   const start = Date.now();
   while (Date.now() - start < TIMEOUT_MS) {
     await sleep(POLL_MS);
@@ -87,25 +79,6 @@ async function main(): Promise<void> {
     } catch {
       // File temporarily unreadable — keep waiting
       continue;
-    }
-
-    // Check if binary was replaced by a Claude auto-update
-    let currentMtime = 0;
-    try {
-      currentMtime = statSync(pending.binaryPath).mtimeMs;
-    } catch {
-      continue; // Binary temporarily missing during update — keep waiting
-    }
-
-    const binaryUpdated = lastMtime > 0 && currentMtime !== lastMtime;
-    if (binaryUpdated) {
-      log('Claude binary was updated — refreshing backup and re-patching...');
-      // Delete stale backup so patchBinary creates a fresh one from the new clean binary
-      const backupPath = pending.binaryPath + '.buddy-mcp-bak';
-      if (existsSync(backupPath)) {
-        try { unlinkSync(backupPath); } catch { /* ignore */ }
-      }
-      lastMtime = currentMtime;
     }
 
     try {

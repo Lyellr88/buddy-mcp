@@ -4,7 +4,8 @@
   "description": "Gacha companion system for Claude Code — collect, evolve, and patch your buddy via MCP",
   "type": "module",
   "bin": {
-    "buddy-mcp": "./dist/mcp/index.js"
+    "buddy-mcp": "./dist/mcp/index.js",
+    "buddy-mcp-build": "./dist/tui/launcher.js"
   },
   "files": [
     "dist/",
@@ -29,6 +30,7 @@
     "typecheck": "tsc --noEmit",
     "serve": "node dist/mcp/index.js",
     "apply": "node dist/mcp/index.js apply",
+    "builder": "node dist/tui/launcher.js",
     "prepublishOnly": "npm run build",
     "prepare": "husky"
   },
@@ -49,9 +51,13 @@
   "author": "",
   "license": "WTFPL",
   "dependencies": {
+    "@inquirer/prompts": "^3",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "chalk": "^5.3.0",
     "zod": "^4.3.6"
+  },
+  "optionalDependencies": {
+    "@opentui/core": "*"
   },
   "lint-staged": {
     "*.ts": [

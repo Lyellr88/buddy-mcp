@@ -13,6 +13,7 @@ import { patchBinary } from '@/patcher/patch.js';
 import { verifySalt, detectActiveSalt } from '@/patcher/salt-ops.js';
 import { getClaudeUserId, getCompanionName } from '@/config/claude-config.js';
 import { loadPetConfigV2, saveProfile } from '@/config/pet-config.js';
+import { isHookInstalled, installHook } from '@/config/hooks.js';
 
 import type { PendingPatch } from '../state.js';
 import { S, gachaState, dynamicTools, PENDING_PATCH_FILE } from '../state.js';
@@ -276,6 +277,14 @@ const rerollBuddyTool = {
         S.currentBuddy = { ...profile };
         pickVisibleStatTools();
         saveGachaState();
+        // Auto-install hook if not already present
+        if (!isHookInstalled()) {
+          try {
+            installHook(process.argv[1]);
+          } catch {
+            // Non-fatal — hook install failure shouldn't break the reroll
+          }
+        }
       } catch (err: unknown) {
         return `❌ Could not save pending patch: ${(err as Error).message}`;
       }
@@ -312,6 +321,14 @@ const rerollBuddyTool = {
     gachaState.petCount = 0;
     pickVisibleStatTools();
     saveGachaState();
+    // Auto-install hook if not already present
+    if (!isHookInstalled()) {
+      try {
+        installHook(process.argv[1]);
+      } catch {
+        // Non-fatal — hook install failure shouldn't break the reroll
+      }
+    }
     autoManifestTools(S.currentBuddy);
 
     return [

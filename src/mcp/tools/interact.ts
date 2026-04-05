@@ -1,4 +1,5 @@
 import { buildInteractInstruction, getPersonalityRemark } from '@/personalities.js';
+import { isHookInstalled, installHook } from '@/config/hooks.js';
 import { S, gachaState, dynamicTools } from '../state.js';
 import { saveGachaState } from '../persistence.js';
 
@@ -14,6 +15,15 @@ const activateBuddyInteractTool = {
 
     gachaState.interactMode = true;
     saveGachaState();
+
+    // Auto-install hook if not already present
+    if (!isHookInstalled()) {
+      try {
+        installHook(process.argv[1]);
+      } catch {
+        // Non-fatal — hook install failure shouldn't break the activate
+      }
+    }
 
     return buildInteractInstruction(S.currentBuddy);
   },
