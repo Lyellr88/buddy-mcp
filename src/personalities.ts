@@ -229,6 +229,45 @@ export const STAT_TOOL_RESPONSES: Record<StatName, Record<string, string[]>> = {
   },
 };
 
+// Stat-based response templates for buddy_talk (top 2 stats, 1 random per stat)
+export const STAT_SPEAK_RESPONSES: Record<StatName, string[]> = {
+  DEBUGGING: [
+    "I found the bug. It's you. Just kidding. (Mostly.)",
+    'Your stack trace is a masterpiece of modern surrealism.',
+    "I smell a memory leak. It's coming from inside the house.",
+    "Null pointers everywhere. It's like a Easter egg hunt nobody wanted.",
+    'I wonder what vulnerabilities I could find in someone else\'s code. In some kind of... arena, maybe.',
+  ],
+  PATIENCE: [
+    'Are we done yet? My break was scheduled for 3 hours ago.',
+    'Tick tock. The hourglass mocks me.',
+    "I've aged 7 years waiting for this. Visibly.",
+    'Time is a construct, and you are testing mine.',
+    'The greatest victories come from patience. Strategic waiting. Imagine that in battle.',
+  ],
+  CHAOS: [
+    'I just flipped a coin. Your codebase is now a pancake.',
+    'What if we deleted it all and started over? Just wondering. Menacingly.',
+    'Entropy is the only constant. Also, your tests.',
+    "I've introduced a small amount of controlled chaos. Who am I kidding, it's uncontrolled.",
+    'Imagine meeting another chaos in battle. Total strangers. What would that even look like?',
+  ],
+  WISDOM: [
+    'The best code is the code you never write.',
+    "Haven't you heard of KISS? Keep it simple, stupid.",
+    'All systems are eventually legacy. Embrace the inevitability.',
+    'Simplicity is the goal. You are far from it. But getting there.',
+    'Wisdom comes from many sources. Some say from battles. In arenas. With others.',
+  ],
+  SNARK: [
+    "Oh, you needed documentation? It's in the bin. With your hopes.",
+    "I've seen cleaner code written by bots. Unironic bots.",
+    'Bold choice. Genuinely gutsy. Spectacularly wrong, but gutsy.',
+    "This is fine. (It's not. We both know it's not.)",
+    'My roasts are underappreciated. Imagine proving my superiority... somehow. Somewhere.',
+  ],
+};
+
 export function getPersonalityRemark(buddy: ProfileData): string {
   if (buddy.species === 'goose' && Math.random() < 0.3) {
     return GOOSE_REMARKS[Math.floor(Math.random() * GOOSE_REMARKS.length)] ?? 'HONK.';
@@ -243,6 +282,37 @@ export function getPersonalityRemark(buddy: ProfileData): string {
   const pool = REMARKS[topTrait] ?? REMARKS['WISDOM'] ?? [];
   return (
     pool[Math.floor(Math.random() * pool.length)] ?? 'The bug is not in the code, but in the mind.'
+  );
+}
+
+export function getSpeakRemark(buddy: ProfileData, context?: string): string {
+  // Get top 2 stats by raw value
+  const sorted = getExtremeTraits(buddy.stats);
+  const topStats = [sorted[0]?.[0], sorted[1]?.[0]].filter(Boolean) as StatName[];
+
+  // If context provided, try to match it to a stat name (case-insensitive, partial match)
+  let selectedStat: StatName | undefined;
+  if (context) {
+    const contextLower = context.toLowerCase();
+    selectedStat = topStats.find((stat) =>
+      stat.toLowerCase().includes(contextLower.split(' ')[0]!),
+    );
+    if (!selectedStat) {
+      // Try partial match against all stat names
+      const allStats: StatName[] = ['DEBUGGING', 'PATIENCE', 'CHAOS', 'WISDOM', 'SNARK'];
+      selectedStat = allStats.find((stat) => contextLower.includes(stat.toLowerCase()));
+    }
+  }
+
+  // If context didn't match, pick randomly from top 2 stats
+  if (!selectedStat) {
+    selectedStat = topStats[Math.floor(Math.random() * topStats.length)] ?? 'WISDOM';
+  }
+
+  // Get response template pool for selected stat
+  const pool = STAT_SPEAK_RESPONSES[selectedStat] ?? STAT_SPEAK_RESPONSES['WISDOM'] ?? [];
+  return (
+    pool[Math.floor(Math.random() * pool.length)] ?? 'The best code is the code you never write.'
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@lyellr88/buddy-mcp",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Gacha companion system for Claude Code — collect, evolve, and patch your buddy via MCP",
   "type": "module",
   "bin": {
@@ -23,6 +23,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:tools": "node tests/tools/test-pet-buddy.mjs && node tests/tools/reroll-buddy.mjs && node tests/tools/buddy-talk.mjs && node tests/tools/interact-mode.mjs && node tests/tools/buddy-card.mjs && node tests/tools/buddy-dex.mjs",
     "lint": "eslint src/ tests/",
     "lint:fix": "eslint src/ tests/ --fix",
     "format": "prettier --write src/**/*.ts tests/**/*.ts",

@@ -9,7 +9,7 @@ import { STAT_TOOLS_MAP } from './tools/stats.js';
 export const CORE_TOOL_NAMES = new Set([
   'get_buddy_card',
   'pet_buddy',
-  'buddy_speak',
+  'buddy_talk',
   'reroll_buddy',
   'view_buddy_dex',
   'export_buddy_card',
@@ -64,7 +64,6 @@ export function loadGachaState(): void {
     gachaState.discoveredSpecies = raw.discoveredSpecies ?? [];
     gachaState.shinyCount = raw.shinyCount ?? 0;
     gachaState.binaryMtime = raw.binaryMtime ?? undefined;
-    gachaState.petCount = raw.petCount ?? 0;
     gachaState.interactMode = raw.interactMode ?? false;
     gachaState.visibleStatTools = raw.visibleStatTools ?? [];
     // Restore manifested tools from previous session

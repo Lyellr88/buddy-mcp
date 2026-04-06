@@ -118,7 +118,7 @@ Every reroll is a random pull from the pool. Rarity affects stat floors. Legenda
 
 **18 species:** duck · goose · blob · cat · dragon · octopus · owl · penguin · turtle · snail · ghost · axolotl · capybara · cactus · robot · rabbit · mushroom · chonk
 
-Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak stat is boosted high and a dump stat is kept humble. Personality shapes how `buddy_speak` and `pet_buddy` respond. A high-Chaos dragon hits different than a patient turtle.
+Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak stat is boosted high and a dump stat is kept humble. Personality shapes how `buddy_talk` and `pet_buddy` respond. A high-Chaos dragon hits different than a patient turtle.
 
 ---
 
@@ -126,13 +126,12 @@ Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak st
 |------|-------------|
 | `reroll_buddy` | 🎲 Spin the wheel. Brute-forces a salt matching a random rare+ outcome and patches your binary. Close Claude and reopen to see it. |
 | `get_buddy_card` | 🪪 Display your current buddy card. Species, rarity, stats, name, ASCII art, everything. |
-| `pet_buddy` | 🤚 Poke your buddy. Builds affection. Every pet counts toward better reroll odds, with 25/50/75 pet milestones unlocking rarity bonuses. |
-| `buddy_speak` | 💬 Ask your buddy to say something. Personality-aligned, stat-influenced. Output shown verbatim. |
+| `pet_buddy` | 🤚 Poke your buddy. Each pet adds 1-15% toward earning an affection token. At 100%, earn 1 token that stacks and persists across sessions. Spend a token on next `reroll_buddy` to guarantee rare+ rarity + 60% hat chance + 20% shiny chance. |
+| `buddy_talk` | 💬 Ask your buddy to say something. Uses stat-based response templates weighted by top 2 stats. Optional context parameter for focused stat selection. Output shown verbatim. |
 | `view_buddy_dex` | 📖 Browse every species you've ever rolled. Gotta catch 'em all. |
 | `export_buddy_card` | 🖼️ Export your full buddy card as an SVG image file. |
 | `export_buddy_sprite` | 🎨 Export just the buddy ASCII sprite as an SVG image file. |
-| `activate_buddy_interact` | 👁️ Start buddy observation mode. Your buddy will react to session events based on personality. |
-| `deactivate_buddy_interact` | 🔕 Stop observation mode. Your buddy goes quiet. |
+| `deactivate_buddy_interact` | 🔕 Turn off buddy observation mode. Your buddy stops watching. (Buddy observation is always on by default.) |
 
 ### Stat Personality Tools
 
@@ -223,7 +222,7 @@ Then restart Claude Code.
 
 ## Personality
 
-Each buddy gets a name and a personality derived from their species. Personality shapes how `buddy_speak`, `pet_buddy`, and stat tools respond. A high-Chaos dragon hits different than a patient turtle.
+Each buddy gets a name and a personality derived from their species. Personality shapes how `buddy_talk`, `pet_buddy`, and stat tools respond. A high-Chaos dragon hits different than a patient turtle.
 
 ---
 

@@ -72,7 +72,11 @@ function makeTool(
 ): void {
   dynamicTools.set(toolName, {
     tool: { name: toolName, description, inputSchema },
-    handler: async (args) => respond(stat, context, args),
+    handler: async (args) => {
+      S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+      S.lastToolCalled = toolName;
+      return respond(stat, context, args);
+    },
     _def: { toolName, description, logic: '', scope: 'global', inputSchema },
   });
 }

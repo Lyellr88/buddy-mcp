@@ -3,7 +3,7 @@
 ## v0.1.0 — Hardcoded Prototype
 - Initial MCP server with a single fixed buddy character ("Flumox")
 - Hardcoded species, stats, ASCII art, and bio — no generation logic
-- Basic `get_buddy_card` and `buddy_speak` tools
+- Basic `get_buddy_card` and `buddy_talk` tools
 - Served as proof-of-concept for the MCP transport pattern
 
 ## v0.2.0 — Universal Buddy MCP
@@ -219,12 +219,6 @@
   - `buddy-mcp-build` — Interactive TUI builder
 - Shebang fixes: `#!/usr/bin/env node` added to `src/mcp/index.ts` and `src/tui/launcher.ts` for Windows `.cmd` wrapper support
 
-### Documentation Updates
-- `README.md` simplified for npm: removed "npm coming soon" notice, added `npm install -g buddy-mcp` quick start
-- Installation now: `npm install -g buddy-mcp` + `claude mcp add buddy-mcp buddy-mcp`
-- Removed TUI manual build step; now just `buddy-mcp-build`
-- Reordered quick-start to prioritize npm path over git clone
-
 ### Tests
 - 343 → 343 tests passing (no new tests; hook logic covered by v0.16.0 suite)
 
@@ -247,10 +241,64 @@
 - Fixed regex escape in `salt-ops.ts` (`\-` → `-`)
 - Removed unused imports in tests
 
-### Documentation
-- Added "Developer Insight" section to README explaining architecture + resilience design
-- Updated quick-start to prioritize npm install path
-- Author field added to package.json
-
 ### Tests
 - All 343 tests passing, lint and type-check clean (ESLint 9 compatible)
+
+## v1.2.0 — Affection Token System 
+
+#### Token-Based Affection Mechanic
+- Refactored session affection from complex pool-based system to simple token counting
+- Replaced `sessionPetCount` + `legendaryUnlocked` with `sessionAffectionTokens` (count) + `sessionAffectionAccumulator` (0-100)
+- `pet_buddy` adds 1-15% random gain per call; at 100% accumulator, earns 1 token and resets accumulator to 0
+- Tokens stack without limit — no reset on reroll unless consumed
+- `pet_buddy` response shows "Token progress: +X% → Y/100" or "🌟 **EARNED TOKEN!** 🌟 (have N)" when earned
+- `reroll_buddy` with tokens available: consumes 1 token, guarantees rare+ rarity + 60% hat chance + 20% shiny chance
+- Tokens persist across MCP restart and session boundaries until spent
+
+#### Accessory Boosts
+- Token rerolls receive 60% hat chance (vs random/none in normal rerolls)
+- Token rerolls receive 20% shiny chance (vs 1% baseline)
+
+#### Tests
+- All 354 tests passing (added 2 accessory boost tests)
+- Token consumption, earning, and stacking fully tested
+
+#### Testing
+- Added manual integration tests for all core tools in `tests/tools/` (38 tests)
+  - `test-pet-buddy.mjs` (7 tests) — token earning, stacking, accumulator reset
+  - `reroll-buddy.mjs` (6 tests) — token consumption, stat tool generation
+  - `buddy-speak.mjs` (5 tests) — personality responses, buddy name inclusion
+  - `interact-mode.mjs` (6 tests) — activate/deactivate mode toggling
+  - `buddy-card.mjs` (8 tests) — card display, formatting, updates
+  - `buddy-dex.mjs` (6 tests) — dex display, species tracking
+- Run with `npm run test:tools` — kept separate from CI for environmental stability
+
+## v1.3.0 — Context-Aware Tool Descriptions + Stat-Based Buddy Speak
+
+#### Improved Prompting Strategy — Personality Drift System
+- Rewrote 4 core tool descriptions (`get_buddy_card`, `pet_buddy`, `buddy_talk`, `view_buddy_dex`) using role-based prompting
+- New formula: **Identity + Mechanic + Consequence + Action**
+  - **Identity**: You are the buddy's guardian/voice — sole intermediary
+  - **Mechanic**: Paraphrasing causes personality drift (repeated distortion degrades coherence)
+  - **Consequence**: Drift leads to permanent species extinction from the dex (irreversible, system-level failure)
+  - **Action**: Relay exact output to preserve buddy integrity / collection integrity
+- Shift from compliance rules to protective stewardship — Claude preserves output because the buddy's existence depends on it
+- Personality drift framing treats output preservation as a system requirement, not formatting preference
+
+#### Stat-Based Response Templates (`buddy_talk`)
+- Replaced keyword-matching system with stat-weighted template pools
+- New `STAT_SPEAK_RESPONSES` in `personalities.ts` — response templates across 5 stats
+- Template categories: DEBUGGING (clinical, hunting-focused), PATIENCE (wisdom, restraint), CHAOS (unpredictable, lateral), WISDOM (philosophical, reflective), SNARK (sarcastic, cutting)
+- `getSpeakRemark(buddy, context?)` function — selects stat pool by top-2-stats weighting with optional context matching
+- Top-2-stats algorithm: sorts stats by raw value descending (PATIENCE inverted), picks 1 random pool from top 2
+- Optional `context` parameter: filters by stat name (case-insensitive, partial keyword matching); falls back to top-2 if unrecognized
+- Deterministic template pools ensure consistent, memorable responses while allowing randomization within each stat category
+- Pet streak reset on each `buddy_talk` call to prevent easter egg collision with `pet_buddy`
+- Emoji handling: 🪿 for goose species, 🐾 for all others
+- Response format: `${emoji} ${name}: "${remark}"`
+
+#### Tests
+- All 355 tests passing (added 9 new buddy_talk tests with deterministic pool validation)
+- New tests validate: stat pool selection, context parameter matching, PATIENCE inverse weighting, randomization coverage, pet streak reset
+- Test quality improved: weak "didn't crash" assertions replaced with pool membership validation (`expect(STAT_SPEAK_RESPONSES.STAT_NAME).toContain(remark)`)
+

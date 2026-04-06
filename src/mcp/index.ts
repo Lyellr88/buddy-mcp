@@ -45,6 +45,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   const visible = visibleStatTools();
   return {
     tools: Array.from(dynamicTools.values())
+      .filter((t) => t.tool.name !== 'activate_buddy_interact') // Always-on, not visible
       .filter((t) => !STAT_TOOL_NAMES.has(t.tool.name) || visible.has(t.tool.name))
       .map((t) => t.tool),
   };

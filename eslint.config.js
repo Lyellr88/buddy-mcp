@@ -19,4 +19,13 @@ export default [
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
+  {
+    files: ['tests/tools/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+      },
+    },
+  },
 ];

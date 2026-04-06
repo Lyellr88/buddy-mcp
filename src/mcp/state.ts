@@ -13,10 +13,13 @@ export interface GachaState {
   shinyCount: number;
   manifestedTools: ManifestedToolDefinition[];
   binaryMtime?: number;
-  petCount: number;
   interactMode: boolean;
   /** Locked stat tool names for the current buddy — set at reroll, stable until next roll. */
   visibleStatTools: string[];
+  /** Earned affection tokens — each token grants rare+ on next reroll */
+  sessionAffectionTokens: number;
+  /** Temporary accumulator (0-100) — resets each time a token is earned */
+  sessionAffectionAccumulator: number;
 }
 
 export interface ManifestedToolDefinition {
@@ -39,15 +42,18 @@ export interface PendingPatch {
 
 export const S = {
   currentBuddy: null as McpBuddy | null,
+  petBuddyStreak: 0, // Track consecutive pet_buddy calls for easter egg
+  lastToolCalled: '', // Track which tool was last called to detect streak breaks
 };
 
 export const gachaState: GachaState = {
   discoveredSpecies: [],
   shinyCount: 0,
   manifestedTools: [],
-  petCount: 0,
-  interactMode: false,
+  interactMode: true, // Always on by default; use deactivate_buddy_interact to turn off
   visibleStatTools: [],
+  sessionAffectionTokens: 0,
+  sessionAffectionAccumulator: 0,
 };
 
 export const dynamicTools: Map<

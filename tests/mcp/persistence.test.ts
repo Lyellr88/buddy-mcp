@@ -42,7 +42,7 @@ describe('CORE_TOOL_NAMES', () => {
   const expected = [
     'get_buddy_card',
     'pet_buddy',
-    'buddy_speak',
+    'buddy_talk',
     'reroll_buddy',
     'view_buddy_dex',
     'export_buddy_card',

@@ -116,6 +116,8 @@ const exportBuddyCardTool = {
     },
   },
   handler: async (args: Record<string, unknown>) => {
+    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.lastToolCalled = 'export_buddy_card';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     const b = S.currentBuddy;
     const outputPath = args['path']
@@ -145,6 +147,8 @@ const exportBuddySpriteTool = {
     },
   },
   handler: async (args: Record<string, unknown>) => {
+    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.lastToolCalled = 'export_buddy_sprite';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     const b = S.currentBuddy;
     const bones: Bones = {

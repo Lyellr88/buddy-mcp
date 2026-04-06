@@ -7,10 +7,12 @@ const activateBuddyInteractTool = {
   tool: {
     name: 'activate_buddy_interact',
     description:
-      'Activate buddy observation mode. Your buddy will occasionally react to session events.',
+      'Start buddy observation mode. Your buddy will occasionally react to session events. (Always on by default.)',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
+    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.lastToolCalled = 'activate_buddy_interact';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     if (gachaState.interactMode)
       return `${S.currentBuddy.name ?? S.currentBuddy.species} is already watching.`;
@@ -34,10 +36,12 @@ const activateBuddyInteractTool = {
 const deactivateBuddyInteractTool = {
   tool: {
     name: 'deactivate_buddy_interact',
-    description: 'Deactivate buddy observation mode. Your buddy stops watching.',
+    description: 'Turn off buddy observation mode. Your buddy stops watching.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
+    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.lastToolCalled = 'deactivate_buddy_interact';
     if (!gachaState.interactMode) return "Buddy wasn't watching.";
 
     gachaState.interactMode = false;
