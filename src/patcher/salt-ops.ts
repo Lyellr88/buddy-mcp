@@ -40,7 +40,7 @@ export function detectActiveSalt(binaryPath: string): string | null {
   const saltLen = ORIGINAL_SALT.length;
   const minCount = getMinSaltCount(binaryPath);
   const buf = readFileSync(binaryPath);
-  const saltPattern = /^[a-zA-Z0-9_\-]{1,}$/;
+  const saltPattern = /^[a-zA-Z0-9_-]{1,}$/;
 
   // Walk through the binary collecting every run of saltLen printable ASCII chars
   // that look like a salt, then count how often each appears.

@@ -8,9 +8,13 @@ dist/
 .claude/
 .qwen/
 
-# Root-level AI instruction files
+# Root-level files
 claude.md
 dump.md
+buddy-flumox-card.svg
+buddy-flumox-sprite.svg
+agents/
+any-buddy-main/
 
 # Docs (internal planning/dev notes)
 docs/

@@ -20,6 +20,21 @@ No companion server. No cloud. Just you, your binary, and the gacha gods.
 
 ---
 
+## Developer Insight
+
+buddy-mcp isn’t just a UI mod. It’s a deterministic companion system layered on top of Claude Code’s binary, with:
+
+- Rerollable personalities and stat-bound behaviors  
+- Persistent state and BuddyDex tracking  
+- Locked tool sets per roll (no session drift)  
+- A self-healing patch pipeline that detects, restores, and reapplies across updates  
+
+Lightweight by design with minimal token usage and data footprint. Most features operate inline through message augmentation rather than separate invocation flows.
+
+Built to be fast, local-first, and resilient to change.
+
+---
+
 ## TUI Builder (`buddy-mcp-build`)
 
 Want more control? Use the interactive builder:
@@ -53,24 +68,23 @@ node dist/tui/cli.js
 - [Node.js](https://nodejs.org/) v20+ — required for everything
 - [Bun](https://bun.sh/) — required for salt brute-forcing (rerolling) + full animated TUI
 
-> **Note:** npm packaging is coming soon. For now, clone and build manually as below.
-
-### 2. Clone & Build
+### 2. Install via npm
 
 ```bash
-git clone https://github.com/Lyellr88/buddy-mcp
-cd buddy-mcp
-npm install
-npm run build
+npm install -g buddy-mcp
 ```
+
+This installs both commands globally:
+- `buddy-mcp` — the MCP server (Claude Code runs this)
+- `buddy-mcp-build` — the interactive TUI builder (you run this)
 
 ### 3. Register with Claude
 
 ```bash
-claude mcp add buddy-mcp node /absolute/path/to/buddy-mcp/dist/mcp/index.js
+claude mcp add buddy-mcp buddy-mcp
 ```
 
-Replace `/absolute/path/to/buddy-mcp` with the actual path on your machine.
+Claude will auto-detect the installed binary and connect it.
 
 ### 4. Verify
 
@@ -83,14 +97,10 @@ You should see a card with your current companion's species, rarity, and stats. 
 For the full interactive builder with live preview:
 
 ```bash
-bun dist/tui/cli.js
+buddy-mcp-build
 ```
 
-Or via npm script (auto-detects Bun, falls back to basic prompts if not installed):
-
-```bash
-npm run builder
-```
+Auto-detects Bun for animated TUI. Falls back to basic prompts without it.
 
 ---
 

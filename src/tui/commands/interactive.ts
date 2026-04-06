@@ -507,6 +507,6 @@ async function applyDesiredTraitsSequential(
     );
   }
   console.log(
-    chalk.dim('\n  If you enjoyed this, star the repo: https://github.com/lyell/buddy-mcp\n'),
+    chalk.dim('\n  If you enjoyed this, star the repo: https://github.com/lyellr88/buddy-mcpp\n'),
   );
 }

@@ -401,7 +401,7 @@ export async function runApplyTUI(
             }
             addSpacer();
             {
-              const repoUrl = 'https://github.com/lyell/buddy-mcp';
+              const repoUrl = 'https://github.com/lyellr88/buddy-mcpp';
               const id = nextId('t');
               stepWidgetIds.push(id);
               const styledContent = new StyledText([

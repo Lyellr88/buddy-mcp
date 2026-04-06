@@ -1,6 +1,6 @@
 {
-  "name": "buddy-mcp",
-  "version": "1.0.0",
+  "name": "@lyellr88/buddy-mcp",
+  "version": "1.1.1",
   "description": "Gacha companion system for Claude Code — collect, evolve, and patch your buddy via MCP",
   "type": "module",
   "bin": {
@@ -48,8 +48,8 @@
     "mcp",
     "model-context-protocol"
   ],
-  "author": "",
-  "license": "WTFPL",
+  "author": "Ryan Lyell",
+  "license": "MIT",
   "dependencies": {
     "@inquirer/prompts": "^3",
     "@modelcontextprotocol/sdk": "^1.29.0",

@@ -47,7 +47,7 @@ function buildCard(bones: Bones, companionName: string | null): string {
   }
 
   lines.push('');
-  lines.push('made with buddy-mcp — github.com/lyell/buddy-mcp');
+  lines.push('made with buddy-mcp — github.com/lyellr88/buddy-mcpp');
 
   // Box
   const innerWidth = Math.max(...lines.map((l) => l.length));
