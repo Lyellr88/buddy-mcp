@@ -145,7 +145,9 @@ describe('buildInteractInstruction', () => {
   });
 
   it('includes dominant stat trigger language', () => {
-    const buddy = makeBuddy({ stats: { DEBUGGING: 20, PATIENCE: 20, CHAOS: 20, WISDOM: 20, SNARK: 90 } });
+    const buddy = makeBuddy({
+      stats: { DEBUGGING: 20, PATIENCE: 20, CHAOS: 20, WISDOM: 20, SNARK: 90 },
+    });
     const result = buildInteractInstruction(buddy);
     expect(result).toContain('SNARK');
   });
@@ -163,7 +165,9 @@ describe('buildInteractInstruction', () => {
   });
 
   it('uses consistent 4-8 message cadence for chaos dominant buddy', () => {
-    const buddy = makeBuddy({ stats: { DEBUGGING: 20, PATIENCE: 50, CHAOS: 90, WISDOM: 20, SNARK: 20 } });
+    const buddy = makeBuddy({
+      stats: { DEBUGGING: 20, PATIENCE: 50, CHAOS: 90, WISDOM: 20, SNARK: 20 },
+    });
     const result = buildInteractInstruction(buddy);
     expect(result).toContain('every 4–8 messages');
   });

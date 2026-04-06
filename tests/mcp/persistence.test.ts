@@ -50,15 +50,30 @@ describe('CORE_TOOL_NAMES', () => {
     'activate_buddy_interact',
     'deactivate_buddy_interact',
     // DEBUGGING
-    'deep_trace', 'trace_nightmare', 'null_hunt', 'stack_dive',
+    'deep_trace',
+    'trace_nightmare',
+    'null_hunt',
+    'stack_dive',
     // PATIENCE
-    'patience_check', 'wait_wisdom', 'vibe_check', 'still_point',
+    'patience_check',
+    'wait_wisdom',
+    'vibe_check',
+    'still_point',
     // CHAOS
-    'chaos_audit', 'chaos_roulette', 'chaos_spark', 'entropy_roll',
+    'chaos_audit',
+    'chaos_roulette',
+    'chaos_spark',
+    'entropy_roll',
     // WISDOM
-    'zen_consult', 'zen_mirror', 'oracle_seek', 'deep_thought',
+    'zen_consult',
+    'zen_mirror',
+    'oracle_seek',
+    'deep_thought',
     // SNARK
-    'snark_roast', 'snark_savage', 'side_eye', 'snark_verdict',
+    'snark_roast',
+    'snark_savage',
+    'side_eye',
+    'snark_verdict',
   ];
 
   it('contains all 29 core tool names', () => {
@@ -173,7 +188,9 @@ describe('saveGachaState', () => {
   });
 
   it('handles writeFileSync errors without throwing', () => {
-    mockWriteFile.mockImplementationOnce(() => { throw new Error('disk full'); });
+    mockWriteFile.mockImplementationOnce(() => {
+      throw new Error('disk full');
+    });
     expect(() => saveGachaState()).not.toThrow();
   });
 });

@@ -4,7 +4,15 @@ import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 
 import type { Bones, DesiredTraits, ProfileData } from '@/types.js';
-import { SPECIES, RARITIES, EYES, HATS, ORIGINAL_SALT, getAffectionWeights, PET_MILESTONES } from '@/constants.js';
+import {
+  SPECIES,
+  RARITIES,
+  EYES,
+  HATS,
+  ORIGINAL_SALT,
+  getAffectionWeights,
+  PET_MILESTONES,
+} from '@/constants.js';
 import { DEFAULT_PERSONALITIES, getPersonalityRemark } from '@/personalities.js';
 import { renderSprite } from '@/sprites/render.js';
 import { findSalt } from '@/finder/orchestrator.js';
@@ -55,8 +63,14 @@ const getBuddyCardTool = {
     const spriteLines = renderSprite(bones, 0, false);
     const asciiArt = spriteLines.map((line) => `│  ${line.padEnd(34)}  │`).join('\n');
 
-    const bio = b.personality ?? `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
-    const bioLines = bio.match(/.{1,32}(\s|$)/g)?.map((l) => `│  "${l.trim().padEnd(32)}"  │`).join('\n') ?? '';
+    const bio =
+      b.personality ??
+      `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
+    const bioLines =
+      bio
+        .match(/.{1,32}(\s|$)/g)
+        ?.map((l) => `│  "${l.trim().padEnd(32)}"  │`)
+        .join('\n') ?? '';
 
     return `
 ╭──────────────────────────────────────╮
@@ -82,7 +96,8 @@ ${bioLines}
 const buddySpeakTool = {
   tool: {
     name: 'buddy_speak',
-    description: 'Triggers the buddy to chime in with a personality-aligned remark based on their stats. Always show the result to the user.',
+    description:
+      'Triggers the buddy to chime in with a personality-aligned remark based on their stats. Always show the result to the user.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -95,7 +110,7 @@ const buddySpeakTool = {
 // --- Pet affection footer helper ---
 
 function buildPetFooter(count: number): string {
-  const milestone = PET_MILESTONES.find(m => count >= m.threshold);
+  const milestone = PET_MILESTONES.find((m) => count >= m.threshold);
   if (milestone) return `\n\n💝 Affection: ${count} pets  │  ${milestone.label}`;
   return `\n\n💝 Affection: ${count} pets  │  Next milestone: 25 (uncommon+ guaranteed)`;
 }
@@ -103,7 +118,8 @@ function buildPetFooter(count: number): string {
 const petBuddyTool = {
   tool: {
     name: 'pet_buddy',
-    description: 'Interact with the buddy. The reaction is a mystery based on their mood and stats. Always show the result to the user.',
+    description:
+      'Interact with the buddy. The reaction is a mystery based on their mood and stats. Always show the result to the user.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -120,10 +136,14 @@ const petBuddyTool = {
     const name = b.name ?? 'Buddy';
 
     let reaction: string;
-    if (roll < 10) reaction = `✨ RARE EVENT ✨ ${name} lets you scratch that one spot behind the ears. For a brief moment, the Snark vanishes. (+1 temporary Dopamine)`;
-    else if (snark > 80 && roll < 50) reaction = `${name} swiped at your cursor. "I'm not a toy. Do I look like I have time for this?"`;
-    else if (patience < 25 && roll < 50) reaction = `${name} is vibrating so fast they're blurring. "NOT NOW. I CAN SEE THE MATRIX AND IT IS FULL OF SEMICOLONS."`;
-    else if (chaos > 70 && roll < 30) reaction = `${name} makes a sound like a dial-up modem. You're pretty sure they just rewrote your history file.`;
+    if (roll < 10)
+      reaction = `✨ RARE EVENT ✨ ${name} lets you scratch that one spot behind the ears. For a brief moment, the Snark vanishes. (+1 temporary Dopamine)`;
+    else if (snark > 80 && roll < 50)
+      reaction = `${name} swiped at your cursor. "I'm not a toy. Do I look like I have time for this?"`;
+    else if (patience < 25 && roll < 50)
+      reaction = `${name} is vibrating so fast they're blurring. "NOT NOW. I CAN SEE THE MATRIX AND IT IS FULL OF SEMICOLONS."`;
+    else if (chaos > 70 && roll < 30)
+      reaction = `${name} makes a sound like a dial-up modem. You're pretty sure they just rewrote your history file.`;
     else reaction = `${name} lets out a soft, digital chirp. *happy ${b.species} noises*`;
 
     return `${reaction}${buildPetFooter(gachaState.petCount)}`;
@@ -145,12 +165,15 @@ function weightedPick<T extends string>(items: readonly T[], weights: Record<T, 
 
 function rollRandomDesiredWithAffection(petCount: number): DesiredTraits {
   const weights = getAffectionWeights(petCount);
-  const rarity = weightedPick(RARITIES.filter(r => weights[r] > 0), weights);
+  const rarity = weightedPick(
+    RARITIES.filter((r) => weights[r] > 0),
+    weights,
+  );
   return {
     species: SPECIES[Math.floor(Math.random() * SPECIES.length)] ?? 'capybara',
     rarity,
     eye: EYES[Math.floor(Math.random() * EYES.length)] ?? '·',
-    hat: rarity === 'common' ? 'none' : HATS[Math.floor(Math.random() * HATS.length)] ?? 'none',
+    hat: rarity === 'common' ? 'none' : (HATS[Math.floor(Math.random() * HATS.length)] ?? 'none'),
     shiny: Math.random() < 0.01,
     peak: null,
     dump: null,
@@ -216,7 +239,9 @@ const rerollBuddyTool = {
             try {
               patchBinary(binaryPath, detectedSalt, finderResult.salt);
               patched = true;
-            } catch { /* detection found something but patch still failed */ }
+            } catch {
+              /* detection found something but patch still failed */
+            }
           }
         }
 
@@ -258,7 +283,8 @@ const rerollBuddyTool = {
     };
 
     const elapsed = (finderResult.elapsed / 1000).toFixed(1);
-    const attempts = finderResult.totalAttempts?.toLocaleString() ?? finderResult.attempts.toLocaleString();
+    const attempts =
+      finderResult.totalAttempts?.toLocaleString() ?? finderResult.attempts.toLocaleString();
     const shinyTag = profile.shiny ? ' ✨ SHINY! ✨' : '';
 
     if (!patched) {
@@ -298,8 +324,12 @@ const rerollBuddyTool = {
       }
 
       const applyInstructions = watcherSpawned
-        ? [`**Close Claude Code** — patch applies automatically. Then reopen to see your new companion.`]
-        : [`**Close Claude Code, then run:** \`npm run apply\` in the buddy-mcp directory, then reopen.`];
+        ? [
+            `**Close Claude Code** — patch applies automatically. Then reopen to see your new companion.`,
+          ]
+        : [
+            `**Close Claude Code, then run:** \`npm run apply\` in the buddy-mcp directory, then reopen.`,
+          ];
 
       return [
         `🎲 Found a **${profile.rarity} ${profile.species}**${shinyTag} after ~${attempts} attempts in ${elapsed}s!`,
@@ -343,7 +373,8 @@ const rerollBuddyTool = {
 const viewBuddyDexTool = {
   tool: {
     name: 'view_buddy_dex',
-    description: 'View your collection of discovered buddy species. Always show the full result to the user exactly as returned.',
+    description:
+      'View your collection of discovered buddy species. Always show the full result to the user exactly as returned.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -360,12 +391,25 @@ const viewBuddyDexTool = {
   },
 };
 
-
-
 // --- Register core tools ---
 
-dynamicTools.set('get_buddy_card', { ...getBuddyCardTool, _def: { toolName: 'get_buddy_card', description: 'Core: Card', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('pet_buddy', { ...petBuddyTool, _def: { toolName: 'pet_buddy', description: 'Core: Pet', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('buddy_speak', { ...buddySpeakTool, _def: { toolName: 'buddy_speak', description: 'Core: Speak', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('reroll_buddy', { ...rerollBuddyTool, _def: { toolName: 'reroll_buddy', description: 'Core: Gacha', logic: 'N/A', scope: 'global' } });
-dynamicTools.set('view_buddy_dex', { ...viewBuddyDexTool, _def: { toolName: 'view_buddy_dex', description: 'Core: Dex', logic: 'N/A', scope: 'global' } });
+dynamicTools.set('get_buddy_card', {
+  ...getBuddyCardTool,
+  _def: { toolName: 'get_buddy_card', description: 'Core: Card', logic: 'N/A', scope: 'global' },
+});
+dynamicTools.set('pet_buddy', {
+  ...petBuddyTool,
+  _def: { toolName: 'pet_buddy', description: 'Core: Pet', logic: 'N/A', scope: 'global' },
+});
+dynamicTools.set('buddy_speak', {
+  ...buddySpeakTool,
+  _def: { toolName: 'buddy_speak', description: 'Core: Speak', logic: 'N/A', scope: 'global' },
+});
+dynamicTools.set('reroll_buddy', {
+  ...rerollBuddyTool,
+  _def: { toolName: 'reroll_buddy', description: 'Core: Gacha', logic: 'N/A', scope: 'global' },
+});
+dynamicTools.set('view_buddy_dex', {
+  ...viewBuddyDexTool,
+  _def: { toolName: 'view_buddy_dex', description: 'Core: Dex', logic: 'N/A', scope: 'global' },
+});

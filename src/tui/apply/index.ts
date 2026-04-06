@@ -376,7 +376,13 @@ export async function runApplyTUI(
           case 'confirm_hook': {
             // Auto-install so the buddy survives Claude Code auto-updates
             if (!isHookInstalled() && !flags.noHook) {
-              const mcpPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'mcp', 'index.js');
+              const mcpPath = join(
+                dirname(fileURLToPath(import.meta.url)),
+                '..',
+                '..',
+                'mcp',
+                'index.js',
+              );
               installHook(mcpPath);
             }
             showStep('done');

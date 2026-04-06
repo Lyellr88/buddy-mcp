@@ -77,7 +77,9 @@ describe('autoManifestTools', () => {
     // Track how many dynamicTools entries exist before
     const beforeCount = dynamicTools.size;
 
-    autoManifestTools(makeProfile({ CHAOS: 95, WISDOM: 90, SNARK: 85, DEBUGGING: 10, PATIENCE: 50 }));
+    autoManifestTools(
+      makeProfile({ CHAOS: 95, WISDOM: 90, SNARK: 85, DEBUGGING: 10, PATIENCE: 50 }),
+    );
 
     // autoManifestTools should not add new entries — all its target names are CORE_TOOL_NAMES
     expect(dynamicTools.size).toBe(beforeCount);
@@ -96,7 +98,10 @@ describe('autoManifestTools', () => {
     // Stat tools are registered at module load time via stats.ts
     // autoManifestTools should protect them from deletion
     for (const name of STAT_TOOL_NAMES) {
-      expect(dynamicTools.has(name), `${name} should remain in dynamicTools after autoManifestTools`).toBe(true);
+      expect(
+        dynamicTools.has(name),
+        `${name} should remain in dynamicTools after autoManifestTools`,
+      ).toBe(true);
     }
 
     autoManifestTools(makeProfile());
@@ -116,7 +121,11 @@ describe('autoManifestTools', () => {
   it('does not affect non-auto custom tools in dynamicTools', () => {
     // Simulate a user manifested tool
     dynamicTools.set('my_custom_tool', {
-      tool: { name: 'my_custom_tool', description: 'test', inputSchema: { type: 'object', properties: {} } },
+      tool: {
+        name: 'my_custom_tool',
+        description: 'test',
+        inputSchema: { type: 'object', properties: {} },
+      },
       handler: async () => 'ok',
       _def: { toolName: 'my_custom_tool', description: 'test', logic: 'ok', scope: 'local' },
     });

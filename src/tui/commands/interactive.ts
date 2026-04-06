@@ -476,7 +476,9 @@ async function applyDesiredTraitsSequential(
         '  Run /buddy in Claude Code to hatch your companion and get a name & personality.',
       ),
     );
-    console.log(chalk.dim('  Then run buddy-mcp-build again to customize the name and personality.'));
+    console.log(
+      chalk.dim('  Then run buddy-mcp-build again to customize the name and personality.'),
+    );
     if (flags.name || flags.personality) {
       console.log(chalk.yellow('  --name and --personality are ignored until after hatching.'));
     }

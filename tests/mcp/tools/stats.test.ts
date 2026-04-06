@@ -30,11 +30,26 @@ describe('STAT_TOOL_NAMES', () => {
   });
 
   const expected = [
-    'deep_trace', 'trace_nightmare', 'null_hunt', 'stack_dive',
-    'patience_check', 'wait_wisdom', 'vibe_check', 'still_point',
-    'chaos_audit', 'chaos_roulette', 'chaos_spark', 'entropy_roll',
-    'zen_consult', 'zen_mirror', 'oracle_seek', 'deep_thought',
-    'snark_roast', 'snark_savage', 'side_eye', 'snark_verdict',
+    'deep_trace',
+    'trace_nightmare',
+    'null_hunt',
+    'stack_dive',
+    'patience_check',
+    'wait_wisdom',
+    'vibe_check',
+    'still_point',
+    'chaos_audit',
+    'chaos_roulette',
+    'chaos_spark',
+    'entropy_roll',
+    'zen_consult',
+    'zen_mirror',
+    'oracle_seek',
+    'deep_thought',
+    'snark_roast',
+    'snark_savage',
+    'side_eye',
+    'snark_verdict',
   ];
   for (const name of expected) {
     it(`includes ${name}`, () => {
@@ -199,8 +214,9 @@ describe('top-stat visibility', () => {
   it('top 2 stats by raw value are correct for MOCK_BUDDY', () => {
     // MOCK_BUDDY: SNARK=90, DEBUGGING=80 are top 2 raw
     const stats = MOCK_BUDDY.stats;
-    const sorted = (Object.entries(stats) as [keyof typeof STAT_TOOLS_MAP, number][])
-      .sort((a, b) => b[1] - a[1]);
+    const sorted = (Object.entries(stats) as [keyof typeof STAT_TOOLS_MAP, number][]).sort(
+      (a, b) => b[1] - a[1],
+    );
     const top2 = sorted.slice(0, 2).map(([s]) => s);
     expect(top2[0]).toBe('SNARK');
     expect(top2[1]).toBe('DEBUGGING');
@@ -208,8 +224,9 @@ describe('top-stat visibility', () => {
 
   it('patience buddy — PATIENCE raw value wins (no inversion)', () => {
     const stats = { DEBUGGING: 52, PATIENCE: 81, CHAOS: 15, WISDOM: 26, SNARK: 19 };
-    const sorted = (Object.entries(stats) as [keyof typeof STAT_TOOLS_MAP, number][])
-      .sort((a, b) => b[1] - a[1]);
+    const sorted = (Object.entries(stats) as [keyof typeof STAT_TOOLS_MAP, number][]).sort(
+      (a, b) => b[1] - a[1],
+    );
     expect(sorted[0]![0]).toBe('PATIENCE');
     expect(sorted[1]![0]).toBe('DEBUGGING');
     // Each stat has a valid 4-tool array

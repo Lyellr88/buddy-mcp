@@ -92,7 +92,9 @@ beforeEach(() => {
 describe('core tool registration', () => {
   it('registers all 6 core tools into dynamicTools', () => {
     const coreNames = [
-      'get_buddy_card', 'pet_buddy', 'buddy_speak',
+      'get_buddy_card',
+      'pet_buddy',
+      'buddy_speak',
       'reroll_buddy',
       'view_buddy_dex',
     ];
@@ -227,7 +229,9 @@ describe('pet_buddy', () => {
 
   it('includes buddy name in response', async () => {
     S.currentBuddy = makeBuddy({ name: 'Feathers' });
-    const results = await Promise.all(Array.from({ length: 20 }, () => getHandler('pet_buddy')({})));
+    const results = await Promise.all(
+      Array.from({ length: 20 }, () => getHandler('pet_buddy')({})),
+    );
     expect(results.some((r) => r.includes('Feathers'))).toBe(true);
   });
 });
@@ -266,7 +270,9 @@ describe('reroll_buddy', () => {
 
   it('returns error when binary not found', async () => {
     const { findClaudeBinary } = await import('@/patcher/binary-finder.js');
-    vi.mocked(findClaudeBinary).mockImplementationOnce(() => { throw new Error('missing'); });
+    vi.mocked(findClaudeBinary).mockImplementationOnce(() => {
+      throw new Error('missing');
+    });
     const result = await getHandler('reroll_buddy')({});
     expect(result).toContain('binary not found');
   });

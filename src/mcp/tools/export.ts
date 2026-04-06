@@ -25,7 +25,12 @@ function statBar(v: number): string {
 }
 
 function sanitizeName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'buddy';
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'buddy'
+  );
 }
 
 function buildSvg(lines: string[]): string {
@@ -70,9 +75,9 @@ function buildCardLines(b: ProfileData): string[] {
   const spriteLines = renderSprite(bones, 0, false).map((line) => `│  ${line.padEnd(34)}  │`);
 
   const bio =
-    b.personality ?? `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
-  const bioLines =
-    bio.match(/.{1,32}(\s|$)/g)?.map((l) => `│  "${l.trim().padEnd(32)}"  │`) ?? [];
+    b.personality ??
+    `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
+  const bioLines = bio.match(/.{1,32}(\s|$)/g)?.map((l) => `│  "${l.trim().padEnd(32)}"  │`) ?? [];
 
   return [
     '╭──────────────────────────────────────╮',
@@ -167,9 +172,19 @@ const exportBuddySpriteTool = {
 
 dynamicTools.set('export_buddy_card', {
   ...exportBuddyCardTool,
-  _def: { toolName: 'export_buddy_card', description: 'Core: Export Card SVG', logic: 'N/A', scope: 'global' },
+  _def: {
+    toolName: 'export_buddy_card',
+    description: 'Core: Export Card SVG',
+    logic: 'N/A',
+    scope: 'global',
+  },
 });
 dynamicTools.set('export_buddy_sprite', {
   ...exportBuddySpriteTool,
-  _def: { toolName: 'export_buddy_sprite', description: 'Core: Export Sprite SVG', logic: 'N/A', scope: 'global' },
+  _def: {
+    toolName: 'export_buddy_sprite',
+    description: 'Core: Export Sprite SVG',
+    logic: 'N/A',
+    scope: 'global',
+  },
 });
