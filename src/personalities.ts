@@ -236,7 +236,7 @@ export const STAT_SPEAK_RESPONSES: Record<StatName, string[]> = {
     'Your stack trace is a masterpiece of modern surrealism.',
     "I smell a memory leak. It's coming from inside the house.",
     "Null pointers everywhere. It's like a Easter egg hunt nobody wanted.",
-    'I wonder what vulnerabilities I could find in someone else\'s code. In some kind of... arena, maybe.',
+    "I wonder what vulnerabilities I could find in someone else's code. In some kind of... arena, maybe.",
   ],
   PATIENCE: [
     'Are we done yet? My break was scheduled for 3 hours ago.',

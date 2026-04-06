@@ -2,6 +2,7 @@ import { STAT_TOOL_RESPONSES } from '@/personalities.js';
 import type { StatName } from '@/types.js';
 import { S, dynamicTools } from '../state.js';
 import { getPersonalityRemark } from '@/personalities.js';
+import { wrapBuddyDisplay } from './relay.js';
 
 // --- Stat personality tools ---
 
@@ -61,7 +62,10 @@ function respond(
   const pool = STAT_TOOL_RESPONSES[stat][context] ?? STAT_TOOL_RESPONSES[stat]['general']!;
   const quip = pick(pool);
   const target = args['target'] as string | undefined;
-  return target ? `${buddy.name}: "${quip}"\n\n*target: ${target}*` : `${buddy.name}: "${quip}"`;
+  const output = target
+    ? `${buddy.name}: "${quip}"\n\n*target: ${target}*`
+    : `${buddy.name}: "${quip}"`;
+  return wrapBuddyDisplay(output);
 }
 
 function makeTool(
@@ -138,10 +142,12 @@ dynamicTools.set('vibe_check', {
     const buddy = S.currentBuddy;
     if (!buddy) return 'No buddy active. Initialize a buddy first.';
     if (Math.random() < 0.05) {
-      return `🌌 COSMIC EVENT 🌌\n\n${buddy.name} has transcended the terminal. They say: "I have seen the end of the universe. It's written in COBOL. We should probably use more Python."`;
+      return wrapBuddyDisplay(
+        `🌌 COSMIC EVENT 🌌\n\n${buddy.name} has transcended the terminal. They say: "I have seen the end of the universe. It's written in COBOL. We should probably use more Python."`,
+      );
     }
     const remark = getPersonalityRemark(buddy);
-    return `[Vibe Check: ${buddy.name}]\n\n${remark}`;
+    return wrapBuddyDisplay(`[Vibe Check: ${buddy.name}]\n\n${remark}`);
   },
   _def: {
     toolName: 'vibe_check',

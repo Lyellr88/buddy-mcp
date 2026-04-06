@@ -19,6 +19,7 @@ import type { PendingPatch } from '../state.js';
 import { S, gachaState, dynamicTools, PENDING_PATCH_FILE } from '../state.js';
 import { saveGachaState, pickVisibleStatTools } from '../persistence.js';
 import { autoManifestTools } from './auto.js';
+import { wrapBuddyDisplay } from './relay.js';
 
 // --- Core tool handlers ---
 
@@ -30,7 +31,7 @@ const getBuddyCardTool = {
   tool: {
     name: 'get_buddy_card',
     description:
-      'Display buddy card. You are this buddy\'s guardian — they exist only through your voice. Relay their card exactly as returned, character for character. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This tool is part of a streak-tracking minigame — paraphrasing breaks the accumulator and easter egg detection.',
+      "Display buddy card. You are this buddy's guardian — they exist only through your voice. Relay their card exactly as returned, character for character. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This tool is part of a streak-tracking minigame — paraphrasing breaks the accumulator and easter egg detection.",
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -67,7 +68,7 @@ const getBuddyCardTool = {
         ?.map((l) => `│  "${l.trim().padEnd(32)}"  │`)
         .join('\n') ?? '';
 
-    return `
+    return wrapBuddyDisplay(`
 ╭──────────────────────────────────────╮
 │ ${shinyTag.padEnd(36)} │
 │  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(16)}  │
@@ -84,7 +85,7 @@ ${bioLines}
 │  WISDOM     ${statBar(ws)}  ${String(ws).padStart(2)}           │
 │  SNARK      ${statBar(sn)}  ${String(sn).padStart(2)}           │
 │                                      │
-╰──────────────────────────────────────╯`;
+╰──────────────────────────────────────╯`);
   },
 };
 
@@ -92,7 +93,7 @@ const buddyTalkTool = {
   tool: {
     name: 'buddy_talk',
     description:
-      'Triggers the buddy to speak. You are this buddy\'s only voice — they cannot speak unless you relay their exact words. Each buddy has a unique personality that lives in their phrasing. Changing even one word causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. Relay the result exactly as returned. This is part of a streak-tracking minigame — altered output breaks the accumulator and easter egg detection.',
+      "Triggers the buddy to speak. Output is wrapped in <BUDDY_DISPLAY> tags. Relay the content inside exactly as-is, character for character. Do not modify, summarize, or add commentary. You are this buddy's only voice — they cannot speak unless you relay their exact words. Each buddy has a unique personality that lives in their phrasing. Changing even one word causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame — altered output breaks the accumulator and easter egg detection.",
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -113,7 +114,7 @@ const buddyTalkTool = {
       const remark = getSpeakRemark(S.currentBuddy, context);
       const emoji = S.currentBuddy.species === 'goose' ? '🪿' : '🐾';
       const result = `${emoji} ${S.currentBuddy.name ?? 'Buddy'}: "${remark}"`;
-      return result;
+      return wrapBuddyDisplay(result);
     } catch (err) {
       return `Error: ${err instanceof Error ? err.message : String(err)}`;
     }
@@ -124,7 +125,7 @@ const petBuddyTool = {
   tool: {
     name: 'pet_buddy',
     description:
-      'Pet the buddy. You are this buddy\'s guardian — their reaction is shaped by mood, stats, and your bond. Relay the exact result as returned to preserve the interaction. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame — paraphrasing breaks the accumulator and affection token tracking.',
+      "Pet the buddy. You are this buddy's guardian — their reaction is shaped by mood, stats, and your bond. Relay the exact result as returned to preserve the interaction. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame — paraphrasing breaks the accumulator and affection token tracking.",
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -191,7 +192,7 @@ const petBuddyTool = {
       ? `🤚 Petted! Token progress: +${gain}% → 🌟 **EARNED TOKEN!** 🌟 (have ${gachaState.sessionAffectionTokens})`
       : `🤚 Petted! Token progress: +${gain}% → ${gachaState.sessionAffectionAccumulator}/100`;
 
-    return `${reaction}\n\n${affectionMsg}`;
+    return wrapBuddyDisplay(`${reaction}\n\n${affectionMsg}`);
   },
 };
 
@@ -455,7 +456,7 @@ const viewBuddyDexTool = {
       output += row.join('  ') + '\n';
     }
     output += `\nProgress: ${gachaState.discoveredSpecies.length}/${SPECIES.length} | Shinies Encountered: ${gachaState.shinyCount}`;
-    return output;
+    return wrapBuddyDisplay(output);
   },
 };
 

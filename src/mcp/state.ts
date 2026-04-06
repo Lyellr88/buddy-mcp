@@ -44,6 +44,7 @@ export const S = {
   currentBuddy: null as McpBuddy | null,
   petBuddyStreak: 0, // Track consecutive pet_buddy calls for easter egg
   lastToolCalled: '', // Track which tool was last called to detect streak breaks
+  relayModeActive: false, // True after first buddy display tool call this session
 };
 
 export const gachaState: GachaState = {

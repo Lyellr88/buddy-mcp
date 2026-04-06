@@ -168,7 +168,7 @@ describe('handler responses with active buddy', () => {
     for (let i = 0; i < 20; i++) {
       const result = await entry.handler({});
       expect(typeof result).toBe('string');
-      if (result.startsWith('[Vibe Check:')) seenNormal = true;
+      if (result.includes('[Vibe Check:')) seenNormal = true;
       expect(result).toMatch(/Vibe Check|COSMIC EVENT/);
     }
     expect(seenNormal).toBe(true); // at 5% chance, 20 runs should almost always hit normal

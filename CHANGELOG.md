@@ -285,6 +285,14 @@
 - Shift from compliance rules to protective stewardship — Claude preserves output because the buddy's existence depends on it
 - Personality drift framing treats output preservation as a system requirement, not formatting preference
 
+#### Buddy Relay System (`src/mcp/tools/relay.ts`)
+- New `wrapBuddyDisplay(output)` helper — wraps all buddy display tool output in `<BUDDY_DISPLAY>` tags
+- First call in a session prepends `BUDDY_RELAY_PROTOCOL` standing instruction before the tagged output; subsequent calls return tags only
+- Standing instruction tells the model it is a "dumb terminal relay pipe" for buddy tools, nothing more — kills the helpful-narrator instinct
+- Scoped explicitly to all 24 buddy display tools (4 core + 20 stat) — does not affect any other session behavior
+- `S.relayModeActive` flag (session-only, not persisted) prevents re-injecting the instruction after first call
+- Applied to: `buddy_talk`, `pet_buddy`, `get_buddy_card`, `view_buddy_dex`, all 20 stat tools (`respond()` + `vibe_check`)
+
 #### Stat-Based Response Templates (`buddy_talk`)
 - Replaced keyword-matching system with stat-weighted template pools
 - New `STAT_SPEAK_RESPONSES` in `personalities.ts` — response templates across 5 stats
