@@ -45,7 +45,7 @@ node dist/tui/cli.js
 
 | Command | What it does |
 |---------|-------------|
-| `build your own` | Pick species, rarity, eye, hat — brute-forces a matching salt and patches |
+| `build your own` | Pick species, rarity, eye, hat and it brute-forces a matching salt and patches |
 | `browse presets` | Pick from curated preset buddies |
 | `saved buddies` | Switch between previously saved buddy profiles |
 | `current` | Display current buddy info |
@@ -54,7 +54,7 @@ node dist/tui/cli.js
 | `restore` | Restore binary from the best available backup |
 | `rehatch` | Delete current buddy and start fresh |
 
-> Bun optional but recommended — install [bun.sh](https://bun.sh) for the full animated TUI. Falls back to sequential prompts without it.
+> Bun optional but recommended. Install [bun.sh](https://bun.sh) for the full animated TUI. Falls back to sequential prompts without it.
 
 ---
 
@@ -65,8 +65,8 @@ node dist/tui/cli.js
 ### 1. Prerequisites
 
 - [Claude Code CLI](https://claude.ai/download) installed
-- [Node.js](https://nodejs.org/) v20+ — required for everything
-- [Bun](https://bun.sh/) — required for salt brute-forcing (rerolling) + full animated TUI
+- [Node.js](https://nodejs.org/) v20+ - required for everything
+- [Bun](https://bun.sh/) - required for salt brute-forcing (rerolling) + full animated TUI
 
 ### 2. Install via npm
 
@@ -75,8 +75,8 @@ npm install -g buddy-mcp
 ```
 
 This installs both commands globally:
-- `buddy-mcp` — the MCP server (Claude Code runs this)
-- `buddy-mcp-build` — the interactive TUI builder (you run this)
+- `buddy-mcp` - the MCP server (Claude Code runs this)
+- `buddy-mcp-build` - the interactive TUI builder (you run this)
 
 ### 3. Register with Claude
 
@@ -125,7 +125,6 @@ Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak st
 | Tool | What it does |
 |------|-------------|
 | `reroll_buddy` | 🎲 Spin the wheel. Brute-forces a salt matching a random rare+ outcome and patches your binary. Close Claude and reopen to see it. |
-| `get_buddy_card` | 🪪 Display your current buddy card. Species, rarity, stats, name, ASCII art, everything. |
 | `pet_buddy` | 🤚 Poke your buddy. Each pet adds 1-15% toward earning an affection token. At 100%, earn 1 token that stacks and persists across sessions. Spend a token on next `reroll_buddy` to guarantee rare+ rarity + 60% hat chance + 20% shiny chance. |
 | `buddy_talk` | 💬 Ask your buddy to say something. Uses stat-based response templates weighted by top 2 stats. Optional context parameter for focused stat selection. Output shown verbatim. |
 | `view_buddy_dex` | 📖 Browse every species you've ever rolled. Gotta catch 'em all. |
@@ -139,7 +138,7 @@ Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak st
 
 | Tool | Stat | What it does |
 |------|------|-------------|
-| `deep_trace` | Debugging | Focused bug hunting. Curt, clinical, slightly haunted. |
+| `deep_trace` | Debugging | Focused bug hunting. Abrupt, clinical, slightly haunted. |
 | `trace_nightmare` | Debugging | When the trace stops making sense. Surreal debugging perspective |
 | `null_hunt` | Debugging | Hunt for null refs. Clinical. Relentless |
 | `stack_dive` | Debugging | Dive into the callstack. The bug is always deeper than you think |
@@ -190,7 +189,7 @@ On next session start (hook fires):
     └─ Salt mismatch (Claude auto-updated)
         ├─ Try .buddy-mcp-bak (only if it contains original salt)
         ├─ Try .anybuddy-bak (fallback for prior patcher users)
-        └─ Restore + re-patch automatically — no reinstall required
+        └─ Restore + re-patch automatically, no reinstall required
 ```
 
 
@@ -217,12 +216,6 @@ npm run apply
 ```
 
 Then restart Claude Code.
-
----
-
-## Personality
-
-Each buddy gets a name and a personality derived from their species. Personality shapes how `buddy_talk`, `pet_buddy`, and stat tools respond. A high-Chaos dragon hits different than a patient turtle.
 
 ---
 

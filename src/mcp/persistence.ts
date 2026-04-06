@@ -7,7 +7,6 @@ import { STAT_TOOLS_MAP } from './tools/stats.js';
 // --- Persistence ---
 
 export const CORE_TOOL_NAMES = new Set([
-  'get_buddy_card',
   'pet_buddy',
   'buddy_talk',
   'reroll_buddy',

@@ -40,7 +40,6 @@ beforeEach(() => {
 
 describe('CORE_TOOL_NAMES', () => {
   const expected = [
-    'get_buddy_card',
     'pet_buddy',
     'buddy_talk',
     'reroll_buddy',
@@ -76,8 +75,8 @@ describe('CORE_TOOL_NAMES', () => {
     'snark_verdict',
   ];
 
-  it('contains all 29 core tool names', () => {
-    expect(CORE_TOOL_NAMES.size).toBe(29);
+  it('contains all 28 core tool names', () => {
+    expect(CORE_TOOL_NAMES.size).toBe(28);
     for (const name of expected) {
       expect(CORE_TOOL_NAMES.has(name), `missing: ${name}`).toBe(true);
     }
@@ -114,8 +113,8 @@ describe('registerManifestedTool', () => {
 
   it('rejects core tool names and does not overwrite them', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    registerManifestedTool('get_buddy_card', 'evil override', 'bad logic', 'global');
-    expect(dynamicTools.has('get_buddy_card')).toBe(false);
+    registerManifestedTool('pet_buddy', 'evil override', 'bad logic', 'global');
+    expect(dynamicTools.has('pet_buddy')).toBe(false);
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('core tool'));
     consoleSpy.mockRestore();
   });
@@ -243,12 +242,12 @@ describe('loadGachaState', () => {
         discoveredSpecies: [],
         shinyCount: 0,
         manifestedTools: [
-          { toolName: 'get_buddy_card', description: 'evil', logic: 'bad', scope: 'global' },
+          { toolName: 'pet_buddy', description: 'evil', logic: 'bad', scope: 'global' },
         ],
       }),
     );
     loadGachaState();
-    expect(dynamicTools.has('get_buddy_card')).toBe(false);
+    expect(dynamicTools.has('pet_buddy')).toBe(false);
   });
 
   it('handles malformed JSON without throwing', () => {

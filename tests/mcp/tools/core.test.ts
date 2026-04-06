@@ -47,7 +47,7 @@ vi.mock('@/sprites/render.js', () => ({
 
 // ─── Imports ───────────────────────────────────────────────────────────────
 
-// Side-effect import — registers all 7 core tools into dynamicTools
+// Side-effect import — registers all 6 core tools into dynamicTools
 import '@/mcp/tools/core.js';
 import { S, gachaState, dynamicTools } from '@/mcp/state.js';
 import { STAT_SPEAK_RESPONSES } from '@/personalities.js';
@@ -93,55 +93,11 @@ beforeEach(() => {
 // ─── Registration block ────────────────────────────────────────────────────
 
 describe('core tool registration', () => {
-  it('registers all 6 core tools into dynamicTools', () => {
-    const coreNames = [
-      'get_buddy_card',
-      'pet_buddy',
-      'buddy_talk',
-      'reroll_buddy',
-      'view_buddy_dex',
-    ];
+  it('registers all 5 core tools into dynamicTools', () => {
+    const coreNames = ['pet_buddy', 'buddy_talk', 'reroll_buddy', 'view_buddy_dex'];
     for (const name of coreNames) {
       expect(dynamicTools.has(name), `missing tool: ${name}`).toBe(true);
     }
-  });
-});
-
-// ─── get_buddy_card ────────────────────────────────────────────────────────
-
-describe('get_buddy_card', () => {
-  it('returns prompt when no buddy', async () => {
-    const result = await getHandler('get_buddy_card')({});
-    expect(result).toContain('Initialize a buddy first');
-  });
-
-  it('returns a card with buddy name and rarity when buddy is set', async () => {
-    S.currentBuddy = makeBuddy({ name: 'Quackers', rarity: 'epic' });
-    const result = await getHandler('get_buddy_card')({});
-    expect(result).toContain('Quackers');
-    expect(result).toContain('EPIC');
-  });
-
-  it('includes shiny tag when buddy is shiny', async () => {
-    S.currentBuddy = makeBuddy({ shiny: true });
-    const result = await getHandler('get_buddy_card')({});
-    expect(result).toContain('SHINY');
-  });
-
-  it('includes hat line when buddy has a hat', async () => {
-    S.currentBuddy = makeBuddy({ hat: 'tinyduck' });
-    const result = await getHandler('get_buddy_card')({});
-    expect(result).toContain('tinyduck');
-  });
-
-  it('includes all 5 stat bars', async () => {
-    S.currentBuddy = makeBuddy();
-    const result = await getHandler('get_buddy_card')({});
-    expect(result).toContain('DEBUGGING');
-    expect(result).toContain('PATIENCE');
-    expect(result).toContain('CHAOS');
-    expect(result).toContain('WISDOM');
-    expect(result).toContain('SNARK');
   });
 });
 
@@ -617,17 +573,6 @@ describe('pet_buddy easter egg (consecutive call tracking)', () => {
         result4.includes('PETTING SINGULARITY') ||
         result4.includes('THE PET ETERNAL'),
     ).toBe(true);
-  });
-
-  it('resets streak on get_buddy_card', async () => {
-    S.currentBuddy = makeBuddy();
-
-    await getHandler('pet_buddy')({});
-    await getHandler('pet_buddy')({});
-    expect(S.petBuddyStreak).toBe(2);
-
-    await getHandler('get_buddy_card')({});
-    expect(S.petBuddyStreak).toBe(0);
   });
 
   it('resets streak on view_buddy_dex', async () => {

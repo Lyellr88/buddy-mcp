@@ -130,10 +130,10 @@
 ## v0.15.0 — Stat Locking, Salt Detection & Polish
 
 ### Stat Tool Visibility — Locked Per Roll
-- isibleStatTools added to GachaState as a persisted string[] field
+- visibleStatTools added to GachaState as a persisted string[] field
 - pickVisibleStatTools() exported from persistence.ts — picks 1 tool from each top-2-stat pool once at reroll time, writes to state; never re-randomizes mid-session
-- isibleStatTools() in index.ts simplified to read cached array (was re-randomizing on every ListTools request, causing tool list to drift)
-- On startup: if isibleStatTools is empty (first launch or old state file), auto-picks and persists
+- visibleStatTools() in index.ts simplified to read cached array (was re-randomizing on every ListTools request, causing tool list to drift)
+- On startup: if visibleStatTools is empty (first launch or old state file), auto-picks and persists
 - pickVisibleStatTools() called at both reroll save points (direct patch + pending patch paths)
 
 ### Binary Patch Resilience — Unknown Salt Detection
@@ -150,10 +150,10 @@
 ### Card Alignment Fixes (Terminal + SVG)
 - All box lines now exactly 40 chars wide (verified via Node.js char-count)
 - Terminal card (core.ts): hat padEnd(34)→31, sprite/name padEnd(36)→34, species padStart(14)→16
-- SVG card (xport.ts): hat emoji 🎩 replaced with Hat:  text prefix (emoji pixel width unreliable in SVG), same padEnd fixes; species padStart(16)→15 (★★ renders slightly wider in SVG)
+- SVG card (export.ts): hat emoji 🎩 replaced with Hat:  text prefix (emoji pixel width unreliable in SVG), same padEnd fixes; species padStart(16)→15 (★★ renders slightly wider in SVG)
 
 ### Tool Display Descriptions Strengthened
-- get_buddy_card, pet_buddy, uddy_speak, iew_buddy_dex descriptions updated: "Always show the full result to the user exactly as returned."
+- get_buddy_card, pet_buddy, buddy_speak, view_buddy_dex descriptions updated: "Always show the full result to the user exactly as returned."
 
 ### Reroll Message Cleanup
 - Removed 💡 Stat tools may have changed — open /mcp hint from both reroll success messages (stat tools now locked per roll, hint was obsolete)
@@ -310,3 +310,10 @@
 - New tests validate: stat pool selection, context parameter matching, PATIENCE inverse weighting, randomization coverage, pet streak reset
 - Test quality improved: weak "didn't crash" assertions replaced with pool membership validation (`expect(STAT_SPEAK_RESPONSES.STAT_NAME).toContain(remark)`)
 
+## v1.3.1 — Removal of `get_buddy_card`
+- Removed `get_buddy_card` tool — Claude Code's native `/buddy` command renders the card better (color, proper ASCII, no alignment issues)
+- Removed tool from `CORE_TOOL_NAMES` in `src/mcp/persistence.ts`
+- Removed tool registration, `statBar()` helper, and card rendering logic from `src/mcp/tools/core.ts`
+- Removed "Run get_buddy_card to preview." from `reroll_buddy` success message
+- Removed `get_buddy_card` from `BUDDY_DISPLAY_TOOLS` in `src/mcp/tools/relay.ts`
+- Core tool count reduced from 5 → 4 (`pet_buddy`, `buddy_talk`, `reroll_buddy`, `view_buddy_dex`)

@@ -5,7 +5,6 @@ const BUDDY_DISPLAY_TOOLS = [
   // Core display tools
   'buddy_talk',
   'pet_buddy',
-  'get_buddy_card',
   'view_buddy_dex',
   // Stat personality tools (2 visible per buddy, but all 20 need relay behavior)
   'deep_trace',
@@ -34,7 +33,7 @@ function buildRelayInstruction(): string {
   return [
     '<BUDDY_RELAY_MODE_ACTIVE>',
     '',
-    '=== BUDDY RELAY PROTOCOL — PERMANENT FOR THIS SESSION ===',
+    '=== BUDDY RELAY PROTOCOL - PERMANENT FOR THIS SESSION ===',
     '',
     `This protocol applies STRICTLY to these tools only: ${BUDDY_DISPLAY_TOOLS}`,
     '',

@@ -89,7 +89,7 @@ function applyPendingPatch({ silent = false } = {}): void {
 
     const { rarity, species, shiny } = pending.profile;
     const shinyTag = shiny ? ' ✨ SHINY' : '';
-    if (!silent) console.log(`🎲 Applying pending patch — ${rarity} ${species}${shinyTag}...`);
+    if (!silent) console.log(`🎲 Applying pending patch - ${rarity} ${species}${shinyTag}...`);
 
     try {
       patchBinary(pending.binaryPath, pending.currentSalt, pending.salt);
@@ -275,7 +275,7 @@ async function main() {
     const currentMtime = statSync(binaryPath).mtimeMs;
     if (gachaState.binaryMtime && currentMtime !== gachaState.binaryMtime) {
       console.error(
-        '⚠️  Claude binary updated — companion may have reverted. Run reroll_buddy to re-patch.',
+        '⚠️  Claude binary updated, companion may have reverted. Run reroll_buddy to re-patch.',
       );
     }
   } catch {
@@ -299,7 +299,7 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('buddy-mcp v2.0.0 running — gacha + binary patching active.');
+  console.error('buddy-mcp v2.0.0 running, gacha + binary patching active.');
 }
 
 main().catch((err) => {

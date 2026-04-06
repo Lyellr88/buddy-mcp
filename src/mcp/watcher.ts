@@ -98,7 +98,7 @@ async function main(): Promise<void> {
           const fallbackMsg = (fallbackErr as Error).message ?? '';
           if (fallbackMsg.includes('Could not find salt')) {
             log(
-              'Claude updated and changed the salt structure — re-patch not possible automatically.\n' +
+              'Claude updated and changed the salt structure. Re-patch not possible automatically.\n' +
                 'Check for a buddy-mcp update, then run reroll_buddy again.',
             );
           } else {

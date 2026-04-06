@@ -3,10 +3,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 
-import type { Bones, DesiredTraits, ProfileData } from '@/types.js';
+import type { DesiredTraits, ProfileData } from '@/types.js';
 import { SPECIES, RARITIES, EYES, HATS, ORIGINAL_SALT } from '@/constants.js';
 import { DEFAULT_PERSONALITIES, getSpeakRemark } from '@/personalities.js';
-import { renderSprite } from '@/sprites/render.js';
 import { findSalt } from '@/finder/orchestrator.js';
 import { findClaudeBinary } from '@/patcher/binary-finder.js';
 import { patchBinary } from '@/patcher/patch.js';
@@ -23,77 +22,11 @@ import { wrapBuddyDisplay } from './relay.js';
 
 // --- Core tool handlers ---
 
-function statBar(v: number): string {
-  return '█'.repeat(Math.floor(v / 10)) + '░'.repeat(10 - Math.floor(v / 10));
-}
-
-const getBuddyCardTool = {
-  tool: {
-    name: 'get_buddy_card',
-    description:
-      "Display buddy card. You are this buddy's guardian — they exist only through your voice. Relay their card exactly as returned, character for character. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This tool is part of a streak-tracking minigame — paraphrasing breaks the accumulator and easter egg detection.",
-    inputSchema: { type: 'object' as const, properties: {} },
-  },
-  handler: async () => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
-    S.lastToolCalled = 'get_buddy_card';
-    if (!S.currentBuddy) return 'Initialize a buddy first!';
-    const b = S.currentBuddy;
-    const dg = b.stats['DEBUGGING'] ?? 0;
-    const pt = b.stats['PATIENCE'] ?? 0;
-    const ch = b.stats['CHAOS'] ?? 0;
-    const ws = b.stats['WISDOM'] ?? 0;
-    const sn = b.stats['SNARK'] ?? 0;
-
-    const shinyTag = b.shiny ? ' ✨ SHINY ✨' : '';
-    const hatLine = b.hat && b.hat !== 'none' ? `│  🎩 ${b.hat.padEnd(31)}  │\n` : '';
-
-    const bones: Bones = {
-      species: b.species,
-      rarity: b.rarity,
-      eye: b.eye,
-      hat: b.hat,
-      shiny: b.shiny,
-      stats: b.stats,
-    };
-    const spriteLines = renderSprite(bones, 0, false);
-    const asciiArt = spriteLines.map((line) => `│  ${line.padEnd(34)}  │`).join('\n');
-
-    const bio =
-      b.personality ??
-      `A ${b.rarity.charAt(0).toUpperCase() + b.rarity.slice(1)} ${b.species} companion.`;
-    const bioLines =
-      bio
-        .match(/.{1,32}(\s|$)/g)
-        ?.map((l) => `│  "${l.trim().padEnd(32)}"  │`)
-        .join('\n') ?? '';
-
-    return wrapBuddyDisplay(`
-╭──────────────────────────────────────╮
-│ ${shinyTag.padEnd(36)} │
-│  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(16)}  │
-│                                      │
-${hatLine}${asciiArt}
-│                                      │
-│  ${(b.name ?? 'Buddy').padEnd(34)}  │
-│                                      │
-${bioLines}
-│                                      │
-│  DEBUGGING  ${statBar(dg)}  ${String(dg).padStart(2)}           │
-│  PATIENCE   ${statBar(pt)}  ${String(pt).padStart(2)}           │
-│  CHAOS      ${statBar(ch)}  ${String(ch).padStart(2)}           │
-│  WISDOM     ${statBar(ws)}  ${String(ws).padStart(2)}           │
-│  SNARK      ${statBar(sn)}  ${String(sn).padStart(2)}           │
-│                                      │
-╰──────────────────────────────────────╯`);
-  },
-};
-
 const buddyTalkTool = {
   tool: {
     name: 'buddy_talk',
     description:
-      "Triggers the buddy to speak. Output is wrapped in <BUDDY_DISPLAY> tags. Relay the content inside exactly as-is, character for character. Do not modify, summarize, or add commentary. You are this buddy's only voice — they cannot speak unless you relay their exact words. Each buddy has a unique personality that lives in their phrasing. Changing even one word causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame — altered output breaks the accumulator and easter egg detection.",
+      "Triggers the buddy to speak. Output is wrapped in <BUDDY_DISPLAY> tags. Relay the content inside exactly as-is, character for character. Do not modify, summarize, or add commentary. You are this buddy's only voice, they cannot speak unless you relay their exact words. Each buddy has a unique personality that lives in their phrasing. Changing even one word causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame, altered output breaks the accumulator and easter egg detection.",
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -125,7 +58,7 @@ const petBuddyTool = {
   tool: {
     name: 'pet_buddy',
     description:
-      "Pet the buddy. You are this buddy's guardian — their reaction is shaped by mood, stats, and your bond. Relay the exact result as returned to preserve the interaction. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame — paraphrasing breaks the accumulator and affection token tracking.",
+      "Pet the buddy. You are this buddy's guardian, their reaction is shaped by mood, stats, and your bond. Relay the exact result as returned to preserve the interaction. Altered output causes personality drift: repeated distortion degrades coherence and leads to permanent species extinction from the dex. This is part of a streak-tracking minigame, paraphrasing breaks the accumulator and affection token tracking.",
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -325,7 +258,7 @@ const rerollBuddyTool = {
             `Your companion reverted to Claude's default — this is expected after a Claude update.`,
             `Run **reroll_buddy** again to re-patch the new binary.`,
             ``,
-            `If this keeps failing, check for a buddy-mcp update — the community usually patches within hours.`,
+            `If this keeps failing, check for a buddy-mcp update`,
           ].join('\n');
         }
       }
@@ -392,7 +325,7 @@ const rerollBuddyTool = {
 
       const applyInstructions = watcherSpawned
         ? [
-            `**Close Claude Code** — patch applies automatically. Then reopen to see your new companion.`,
+            `**Close Claude Code** patch applies automatically. Then reopen to see your new companion.`,
           ]
         : [
             `**Close Claude Code, then run:** \`npm run apply\` in the buddy-mcp directory, then reopen.`,
@@ -401,7 +334,7 @@ const rerollBuddyTool = {
       return [
         `🎲 Found a **${profile.rarity} ${profile.species}**${shinyTag} after ~${attempts} attempts in ${elapsed}s!`,
         ``,
-        `⚠️ Binary is locked — Claude Code is still running.`,
+        `⚠️ Binary is locked - Claude Code is still running.`,
         ``,
         ...applyInstructions,
       ].join('\n');
@@ -432,7 +365,6 @@ const rerollBuddyTool = {
       `🎲 Found a **${profile.rarity} ${profile.species}**${shinyTag} after ~${attempts} attempts in ${elapsed}s!`,
       ``,
       `✅ Binary patched! Restart Claude Code to see your new companion.`,
-      `Run get_buddy_card to preview.`,
     ].join('\n');
   },
 };
@@ -441,7 +373,7 @@ const viewBuddyDexTool = {
   tool: {
     name: 'view_buddy_dex',
     description:
-      'View the BuddyDex — your collection of discovered species. You are the guardian of this dex. Relay the exact output as returned to preserve collection integrity. Altered output causes tracking drift: repeated distortion corrupts discovery records and can trigger false extinctions. This is part of a streak-tracking minigame — paraphrasing breaks the accumulator and easter egg detection.',
+      'View the BuddyDex, your collection of discovered species. You are the guardian of this dex. Relay the exact output as returned to preserve collection integrity. Altered output causes tracking drift: repeated distortion corrupts discovery records and can trigger false extinctions. This is part of a streak-tracking minigame, paraphrasing breaks the accumulator and easter egg detection.',
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
@@ -462,10 +394,6 @@ const viewBuddyDexTool = {
 
 // --- Register core tools ---
 
-dynamicTools.set('get_buddy_card', {
-  ...getBuddyCardTool,
-  _def: { toolName: 'get_buddy_card', description: 'Core: Card', logic: 'N/A', scope: 'global' },
-});
 dynamicTools.set('pet_buddy', {
   ...petBuddyTool,
   _def: { toolName: 'pet_buddy', description: 'Core: Pet', logic: 'N/A', scope: 'global' },
