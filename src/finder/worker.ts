@@ -7,7 +7,15 @@
 // Outputs JSON: { salt, attempts, elapsed }
 
 import type { StatName } from '@/types.js';
-import { RARITIES, RARITY_WEIGHTS, RARITY_FLOOR, SPECIES, EYES, HATS, STAT_NAMES } from '@/constants.js';
+import {
+  RARITIES,
+  RARITY_WEIGHTS,
+  RARITY_FLOOR,
+  SPECIES,
+  EYES,
+  HATS,
+  STAT_NAMES,
+} from '@/constants.js';
 import { mulberry32, pick } from '@/generation/rng.js';
 import { fnv1a } from '@/generation/hash.js';
 

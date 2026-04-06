@@ -70,7 +70,13 @@ export function loadGachaState(): void {
     // Restore manifested tools from previous session
     for (const def of raw.manifestedTools ?? []) {
       if (!CORE_TOOL_NAMES.has(def.toolName)) {
-        registerManifestedTool(def.toolName, def.description, def.logic, def.scope, def.inputSchema);
+        registerManifestedTool(
+          def.toolName,
+          def.description,
+          def.logic,
+          def.scope,
+          def.inputSchema,
+        );
       }
     }
   } catch (err) {
@@ -80,9 +86,13 @@ export function loadGachaState(): void {
 
 // Picks and locks 1 stat tool from each of the top 2 stats. Call once per reroll — stable until next roll.
 export function pickVisibleStatTools(): void {
-  if (!S.currentBuddy) { gachaState.visibleStatTools = []; return; }
-  const sorted = (Object.entries(S.currentBuddy.stats) as [keyof typeof STAT_TOOLS_MAP, number][])
-    .sort((a, b) => b[1] - a[1]);
+  if (!S.currentBuddy) {
+    gachaState.visibleStatTools = [];
+    return;
+  }
+  const sorted = (
+    Object.entries(S.currentBuddy.stats) as [keyof typeof STAT_TOOLS_MAP, number][]
+  ).sort((a, b) => b[1] - a[1]);
   const picked: string[] = [];
   for (const [stat] of sorted.slice(0, 2)) {
     const pool = STAT_TOOLS_MAP[stat];
@@ -111,7 +121,10 @@ export function registerManifestedTool(
     tool: {
       name,
       description: `[Buddy Tool] ${description} (${scope})`,
-      inputSchema: (inputSchema as Tool['inputSchema']) ?? { type: 'object' as const, properties: {} },
+      inputSchema: (inputSchema as Tool['inputSchema']) ?? {
+        type: 'object' as const,
+        properties: {},
+      },
     },
     handler: async (callArgs: Record<string, unknown>) => {
       let response = logic;

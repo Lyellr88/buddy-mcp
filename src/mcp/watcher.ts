@@ -99,7 +99,7 @@ async function main(): Promise<void> {
           if (fallbackMsg.includes('Could not find salt')) {
             log(
               'Claude updated and changed the salt structure — re-patch not possible automatically.\n' +
-              'Check for a buddy-mcp update, then run reroll_buddy again.',
+                'Check for a buddy-mcp update, then run reroll_buddy again.',
             );
           } else {
             log(`Unexpected fallback patch error: ${fallbackMsg}`);
@@ -131,7 +131,9 @@ async function main(): Promise<void> {
     }
 
     unlinkSync(PENDING_PATCH_FILE);
-    log(`✅ ${rarity} ${species}${shinyTag} patched! Reopen Claude Code to see your new companion.`);
+    log(
+      `✅ ${rarity} ${species}${shinyTag} patched! Reopen Claude Code to see your new companion.`,
+    );
     return;
   }
 

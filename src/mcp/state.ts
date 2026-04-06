@@ -52,7 +52,11 @@ export const gachaState: GachaState = {
 
 export const dynamicTools: Map<
   string,
-  { tool: Tool; handler: (args: Record<string, unknown>) => Promise<string>; _def: ManifestedToolDefinition }
+  {
+    tool: Tool;
+    handler: (args: Record<string, unknown>) => Promise<string>;
+    _def: ManifestedToolDefinition;
+  }
 > = new Map();
 
 export const GACHA_STATE_FILE = join(homedir(), '.buddy_mcp_gacha.json');

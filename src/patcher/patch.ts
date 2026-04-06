@@ -109,10 +109,7 @@ export function patchBinary(binaryPath: string, oldSalt: string, newSalt: string
 
 // Returns the best available backup path that contains ORIGINAL_SALT, or null.
 export function findRestorableBackup(binaryPath: string): string | null {
-  const candidates = [
-    binaryPath + '.buddy-mcp-bak',
-    binaryPath + '.anybuddy-bak',
-  ];
+  const candidates = [binaryPath + '.buddy-mcp-bak', binaryPath + '.anybuddy-bak'];
   for (const candidate of candidates) {
     if (!existsSync(candidate)) continue;
     try {

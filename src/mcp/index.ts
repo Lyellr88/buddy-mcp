@@ -9,12 +9,24 @@ import { roll } from '@/generation/roll.js';
 import { findClaudeBinary } from '@/patcher/binary-finder.js';
 import { patchBinary, findRestorableBackup, restoreBinary } from '@/patcher/patch.js';
 import { verifySalt } from '@/patcher/salt-ops.js';
-import { getClaudeUserId, getCompanionName, renameCompanion, setCompanionPersonality } from '@/config/claude-config.js';
+import {
+  getClaudeUserId,
+  getCompanionName,
+  renameCompanion,
+  setCompanionPersonality,
+} from '@/config/claude-config.js';
 import { loadPetConfigV2, saveProfile } from '@/config/pet-config.js';
 import { isHookInstalled, installHook } from '@/config/hooks.js';
 
 import type { GachaState, PendingPatch } from './state.js';
-import { S, gachaState, dynamicTools, server, GACHA_STATE_FILE, PENDING_PATCH_FILE } from './state.js';
+import {
+  S,
+  gachaState,
+  dynamicTools,
+  server,
+  GACHA_STATE_FILE,
+  PENDING_PATCH_FILE,
+} from './state.js';
 import { loadGachaState, saveGachaState, pickVisibleStatTools } from './persistence.js';
 import { autoManifestTools } from './tools/auto.js';
 import './tools/core.js'; // side-effect: registers all 9 core tools into dynamicTools
@@ -42,10 +54,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const toolEntry = dynamicTools.get(request.params.name);
   if (!toolEntry) throw new Error(`Tool not found: ${request.params.name}`);
   try {
-    const result = await toolEntry.handler((request.params.arguments ?? {}) as Record<string, unknown>);
+    const result = await toolEntry.handler(
+      (request.params.arguments ?? {}) as Record<string, unknown>,
+    );
     return { content: [{ type: 'text', text: result }] };
   } catch (error: unknown) {
-    return { isError: true, content: [{ type: 'text', text: `Error: ${(error as Error).message}` }] };
+    return {
+      isError: true,
+      content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
+    };
   }
 });
 
@@ -62,7 +79,10 @@ function applyPendingPatch({ silent = false } = {}): void {
     try {
       pending = JSON.parse(readFileSync(PENDING_PATCH_FILE, 'utf-8')) as PendingPatch;
     } catch {
-      if (!silent) console.error('❌ Pending patch file is corrupted. Delete ~/.buddy_mcp_pending.json and try again.');
+      if (!silent)
+        console.error(
+          '❌ Pending patch file is corrupted. Delete ~/.buddy_mcp_pending.json and try again.',
+        );
       process.exit(silent ? 0 : 1);
     }
 
@@ -144,8 +164,20 @@ function applyPendingPatch({ silent = false } = {}): void {
       // Restore companion identity from saved profile
       const activeSalt = petConfig.activeProfile;
       const profile = activeSalt ? petConfig.profiles[activeSalt] : undefined;
-      if (profile?.name) { try { renameCompanion(profile.name); } catch { /* non-fatal */ } }
-      if (profile?.personality) { try { setCompanionPersonality(profile.personality); } catch { /* non-fatal */ } }
+      if (profile?.name) {
+        try {
+          renameCompanion(profile.name);
+        } catch {
+          /* non-fatal */
+        }
+      }
+      if (profile?.personality) {
+        try {
+          setCompanionPersonality(profile.personality);
+        } catch {
+          /* non-fatal */
+        }
+      }
       if (!silent) console.log('✅ Pet re-patched after update.');
       return;
     } catch (err) {
@@ -162,8 +194,20 @@ function applyPendingPatch({ silent = false } = {}): void {
       patchBinary(binaryPath, ORIGINAL_SALT, petConfig.salt);
       const activeSalt = petConfig.activeProfile;
       const profile = activeSalt ? petConfig.profiles[activeSalt] : undefined;
-      if (profile?.name) { try { renameCompanion(profile.name); } catch { /* non-fatal */ } }
-      if (profile?.personality) { try { setCompanionPersonality(profile.personality); } catch { /* non-fatal */ } }
+      if (profile?.name) {
+        try {
+          renameCompanion(profile.name);
+        } catch {
+          /* non-fatal */
+        }
+      }
+      if (profile?.personality) {
+        try {
+          setCompanionPersonality(profile.personality);
+        } catch {
+          /* non-fatal */
+        }
+      }
       if (!silent) console.log('✅ Pet restored from backup and re-patched after update.');
       return;
     } catch (err) {

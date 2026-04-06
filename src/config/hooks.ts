@@ -45,7 +45,9 @@ function findHookEntry(matchers: MatcherEntry[] | undefined): MatcherEntry | nul
   if (!Array.isArray(matchers)) return null;
   return (
     matchers.find(
-      (m) => Array.isArray(m.hooks) && m.hooks.some((h) => h.command.includes('apply --silent') && h.command.includes('index.js')),
+      (m) =>
+        Array.isArray(m.hooks) &&
+        m.hooks.some((h) => h.command.includes('apply --silent') && h.command.includes('index.js')),
     ) ?? null
   );
 }
@@ -74,7 +76,9 @@ export function removeHook(): void {
   const settings = getClaudeSettings();
   if (!settings.hooks?.SessionStart) return;
   settings.hooks.SessionStart = settings.hooks.SessionStart.filter(
-    (m) => !Array.isArray(m.hooks) || !m.hooks.some((h) => h.command.includes('apply --silent') && h.command.includes('index.js')),
+    (m) =>
+      !Array.isArray(m.hooks) ||
+      !m.hooks.some((h) => h.command.includes('apply --silent') && h.command.includes('index.js')),
   );
   if (settings.hooks.SessionStart.length === 0) delete settings.hooks.SessionStart;
   if (Object.keys(settings.hooks).length === 0) delete settings.hooks;
