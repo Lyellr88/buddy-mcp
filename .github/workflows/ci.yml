@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci --omit=optional
+      - run: npm install --omit=optional
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
@@ -45,7 +45,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - run: npm ci --omit=optional
+      - run: npm install --omit=optional
       - uses: actions/download-artifact@v4
         with:
           name: dist
