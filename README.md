@@ -15,24 +15,49 @@ A break from long code sessions. Stuck on a bug? Reroll a buddy, talk with them,
 
 ## Quick Demo
 
-### Interactive Builder
+<table>
+<tr>
+<td width="33%">
+
+<details>
+<summary><strong>Interactive Builder</strong></summary>
 Build your perfect buddy with full control.
 
-[Watch video](https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_cli_builder.mp4)
+<video width="100%" controls>
+  <source src="https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_cli_builder.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</details>
 
----
+</td>
+<td width="33%">
 
-### Reroll in Action
+<details>
+<summary><strong>Reroll in Action</strong></summary>
 Roll, close Claude, reopen—new buddy live.
 
-[Watch video](https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_reroll_action.mp4)
+<video width="100%" controls>
+  <source src="https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_reroll_action.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</details>
 
----
+</td>
+<td width="33%">
 
-### Interact with Tools
+<details>
+<summary><strong>Interact with Tools</strong></summary>
 Talk, pet, and explore your buddy's dex.
 
-[Watch video](https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_tools_action.mp4)
+<video width="100%" controls>
+  <source src="https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_tools_action.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</details>
+
+</td>
+</tr>
+</table>
 
 ---
 
