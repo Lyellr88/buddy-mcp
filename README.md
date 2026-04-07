@@ -226,5 +226,3 @@ This is the only time you need manual steps — the watcher handles all other ca
 ## Credits
 
 Forked and extended from [any-buddy](https://github.com/cpaczek/any-buddy) by cpaczek.
-
-Licensed under [WTFPL](http://www.wtfpl.net/).
