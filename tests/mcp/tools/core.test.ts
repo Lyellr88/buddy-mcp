@@ -5,6 +5,7 @@
 vi.mock('fs', () => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
+  renameSync: vi.fn(),
   existsSync: vi.fn(() => false),
   statSync: vi.fn(() => ({ mtimeMs: 12345 })),
   unlinkSync: vi.fn(),
@@ -50,6 +51,7 @@ vi.mock('@/sprites/render.js', () => ({
 // Side-effect import — registers all 6 core tools into dynamicTools
 import '@/mcp/tools/core.js';
 import { S, gachaState, dynamicTools } from '@/mcp/state.js';
+import { loadGachaState } from '@/mcp/persistence.js';
 import { STAT_SPEAK_RESPONSES } from '@/personalities.js';
 import type { ProfileData } from '@/types.js';
 
@@ -88,6 +90,9 @@ beforeEach(() => {
   gachaState.sessionAffectionTokens = 0;
   gachaState.sessionAffectionAccumulator = 0;
   vi.clearAllMocks();
+  // existsSync returns false after clearAllMocks — loadGachaState treats this as
+  // first-run and sets loadSucceeded = true, allowing saveGachaState to proceed.
+  loadGachaState();
 });
 
 // ─── Registration block ────────────────────────────────────────────────────

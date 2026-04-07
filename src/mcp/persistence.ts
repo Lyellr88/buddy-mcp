@@ -1,10 +1,16 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync } from 'fs';
 import { type Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { GachaState, ManifestedToolDefinition } from './state.js';
 import { S, gachaState, dynamicTools, GACHA_STATE_FILE } from './state.js';
 import { STAT_TOOLS_MAP } from './tools/stats.js';
 
 // --- Persistence ---
+
+// Guards saveGachaState() from overwriting a file that failed to load (corrupted).
+// Set to true on successful load or on first run (no file yet). Stays false only
+// when the file exists but could not be parsed — in that case we refuse to save
+// over what might be a recoverable file.
+let loadSucceeded = false;
 
 export const CORE_TOOL_NAMES = new Set([
   'pet_buddy',
@@ -43,21 +49,33 @@ export const CORE_TOOL_NAMES = new Set([
 ]);
 
 export function saveGachaState(): void {
+  if (!loadSucceeded) {
+    console.error('Skipping gacha state save — previous load failed (file may be corrupted).');
+    return;
+  }
   const toolsToSave = Array.from(dynamicTools.values())
     .filter((e) => !CORE_TOOL_NAMES.has(e._def.toolName))
     .map((e) => e._def);
+  const tmp = GACHA_STATE_FILE + '.tmp';
   try {
-    writeFileSync(
-      GACHA_STATE_FILE,
-      JSON.stringify({ ...gachaState, manifestedTools: toolsToSave }, null, 2),
-    );
+    writeFileSync(tmp, JSON.stringify({ ...gachaState, manifestedTools: toolsToSave }, null, 2));
+    renameSync(tmp, GACHA_STATE_FILE);
   } catch (err) {
+    try {
+      unlinkSync(tmp);
+    } catch {
+      /* ignore — tmp may not exist */
+    }
     console.error('Failed to save gacha state:', err);
   }
 }
 
 export function loadGachaState(): void {
-  if (!existsSync(GACHA_STATE_FILE)) return;
+  if (!existsSync(GACHA_STATE_FILE)) {
+    // First run — no file yet, valid empty state
+    loadSucceeded = true;
+    return;
+  }
   try {
     const raw = JSON.parse(readFileSync(GACHA_STATE_FILE, 'utf-8')) as GachaState;
     gachaState.discoveredSpecies = raw.discoveredSpecies ?? [];
@@ -77,8 +95,10 @@ export function loadGachaState(): void {
         );
       }
     }
+    loadSucceeded = true;
   } catch (err) {
-    console.error('Failed to load gacha state:', err);
+    console.error('Failed to load gacha state (file may be corrupted — will not overwrite):', err);
+    // loadSucceeded stays false — saveGachaState() will refuse to run
   }
 }
 

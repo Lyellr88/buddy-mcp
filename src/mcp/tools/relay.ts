@@ -27,9 +27,29 @@ const BUDDY_DISPLAY_TOOLS = [
   'snark_savage',
   'side_eye',
   'snark_verdict',
+  // Interact tools
+  'activate_buddy_interact',
+  'deactivate_buddy_interact',
 ].join(', ');
 
 function buildRelayInstruction(): string {
+  const buddy = S.currentBuddy;
+  const name = buddy?.name ?? buddy?.species ?? 'your buddy';
+  const emoji = buddy?.species === 'goose' ? '🪿' : '🐾';
+
+  const companionLines = buddy
+    ? [
+        '',
+        '=== BUDDY COMPANION MODE (permanent for this session) ===',
+        '',
+        `${name} is always watching. Every 4–8 messages, append to the END of your response:`,
+        '  ---',
+        `  ${emoji} ${name}: "<in-character quip matching their personality, under 12 words>"`,
+        'Do NOT react every message. Do NOT explain the quip. Pure personality only.',
+        'If deactivate_buddy_interact is called, stop quips for the rest of this session.',
+      ]
+    : [];
+
   return [
     '<BUDDY_RELAY_MODE_ACTIVE>',
     '',
@@ -51,6 +71,7 @@ function buildRelayInstruction(): string {
     'All other MCP tools and coding assistance work exactly as before.',
     '',
     'Relay mode is now ACTIVE.',
+    ...companionLines,
     '</BUDDY_RELAY_MODE_ACTIVE>',
   ].join('\n');
 }

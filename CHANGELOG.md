@@ -317,3 +317,40 @@
 - Removed "Run get_buddy_card to preview." from `reroll_buddy` success message
 - Removed `get_buddy_card` from `BUDDY_DISPLAY_TOOLS` in `src/mcp/tools/relay.ts`
 - Core tool count reduced from 5 → 4 (`pet_buddy`, `buddy_talk`, `reroll_buddy`, `view_buddy_dex`)
+
+## v1.4.0 — Relay System Hardening + Buddy Interact Simplification + Dex Persistence Fix
+
+### Buddy Interact — Simplified Architecture
+- Removed `buildInteractInstruction()` and `INTERACT_TRIGGERS` from `personalities.ts` — one-time tool result instructions don't persist across Claude's context; approach was fundamentally broken
+- Quip behavior moved into `buildRelayInstruction()` in `relay.ts` — companion mode is now part of the permanent standing instruction injected on first buddy tool call, same mechanism that makes the relay protocol stick
+- `BUDDY COMPANION MODE` section embeds cadence (every 4–8 messages), quip format, emoji (🐾 / 🪿), buddy name, and deactivate rule — all resolved from `S.currentBuddy` at injection time
+- `activate_buddy_interact` simplified: now returns a wrapped confirmation (`"${name} is now watching."`) instead of a large instruction block Claude would forget
+- `deactivate_buddy_interact` farewell now wrapped in `wrapBuddyDisplay()` — consistent relay behavior with other display tools
+- Both interact tools added to `BUDDY_DISPLAY_TOOLS` scoped list in `relay.ts`
+
+### Tool Descriptions — Interact Tools
+- Updated `activate_buddy_interact` and `deactivate_buddy_interact` descriptions with guardian / consequence / drift framing (matching the pattern from v1.3.0 for the 4 core tools)
+- `activate`: identity framing ("only presence in the session"), presence drift consequence, extinction chain
+- `deactivate`: relay directive, guardian framing, session-end record corruption consequence
+
+### BuddyDex Persistence Fix
+- **Root cause**: if `~/.buddy_mcp_gacha.json` was corrupted or deleted, `loadGachaState()` silently failed → `discoveredSpecies` stayed `[]` → startup dex-sync called `saveGachaState()` → file overwritten with single species (current buddy only)
+- **Fix 1 — `loadSucceeded` guard**: `saveGachaState()` now refuses to run if the previous `loadGachaState()` call failed on a file that existed but couldn't be parsed — corrupted file is preserved for manual recovery instead of being silently overwritten
+- **Fix 2 — Atomic writes**: all three write paths (`persistence.ts`, `watcher.ts`, `index.ts`) now write to `.buddy_mcp_gacha.json.tmp` then `renameSync` to the real file — `renameSync` is atomic on NTFS and ext4, preventing partial-write corruption if Claude crashes mid-save
+- **Fix 3 — `.tmp` cleanup**: if `renameSync` fails (e.g. file lock on Windows), the stale `.tmp` file is cleaned up automatically
+
+### Tests
+- New: `tests/mcp/tools/relay.test.ts` — 18 tests
+  - `wrapBuddyDisplay`: tag format, first-call injection, `relayModeActive` flag, no re-injection on subsequent calls, content preservation
+  - Relay instruction: RULE ZERO presence, full `BUDDY_DISPLAY_TOOLS` completeness (all 20 stat tools asserted by name), relay pipe framing
+  - Companion mode: omitted when no buddy, buddy name injection, 🐾 vs 🪿 emoji, species fallback, cadence line (`Every 4–8 messages`), quip length constraint (`under 12 words`), `Do NOT react every message` guard, `deactivate_buddy_interact` stop rule
+- Updated: `tests/mcp/tools/interact.test.ts` — removed `buildInteractInstruction` and `INTERACT_TRIGGERS` describe blocks; updated activate tests to match simplified confirmation message
+- Updated: `tests/mcp/persistence.test.ts`, `tests/mcp/tools/core.test.ts`, `tests/mcp/tools/interact.test.ts` — added `renameSync` to fs mocks; added `loadGachaState()` to `beforeEach` to prime `loadSucceeded = true`
+- 359 tests passing (30 test files)
+
+### Docs
+- Added `CONTRIBUTING.md` — full contribution guide: setup, project structure, path aliases, adding new tools, testing, CI/CD, runtime architecture, MIT attribution
+- Added badges to `README.md`: npm version, CI status, MIT license, Node ≥20
+
+---
+

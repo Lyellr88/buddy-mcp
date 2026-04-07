@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { readFileSync, writeFileSync, existsSync, unlinkSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, existsSync, unlinkSync, statSync } from 'fs';
 
 import { ORIGINAL_SALT } from '@/constants.js';
 import { DEFAULT_PERSONALITIES } from '@/personalities.js';
@@ -111,7 +111,18 @@ function applyPendingPatch({ silent = false } = {}): void {
           raw.discoveredSpecies.push(pending.profile.species);
         }
         if (pending.profile.shiny) raw.shinyCount = (raw.shinyCount ?? 0) + 1;
-        writeFileSync(GACHA_STATE_FILE, JSON.stringify(raw, null, 2));
+        const tmp = GACHA_STATE_FILE + '.tmp';
+        try {
+          writeFileSync(tmp, JSON.stringify(raw, null, 2));
+          renameSync(tmp, GACHA_STATE_FILE);
+        } catch (writeErr) {
+          try {
+            unlinkSync(tmp);
+          } catch {
+            /* ignore */
+          }
+          throw writeErr;
+        }
       } catch {
         // Non-fatal — gacha state will self-heal on next server start
       }

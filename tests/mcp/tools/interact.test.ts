@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('fs', () => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
+  renameSync: vi.fn(),
   existsSync: vi.fn(() => false),
 }));
 
@@ -16,7 +17,7 @@ vi.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
 
 import '@/mcp/tools/interact.js';
 import { S, gachaState, dynamicTools } from '@/mcp/state.js';
-import { buildInteractInstruction, INTERACT_TRIGGERS } from '@/personalities.js';
+import { loadGachaState } from '@/mcp/persistence.js';
 import type { ProfileData } from '@/types.js';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -48,6 +49,9 @@ beforeEach(() => {
   S.currentBuddy = null;
   gachaState.interactMode = false;
   vi.clearAllMocks();
+  // existsSync returns false after clearAllMocks — loadGachaState treats this as
+  // first-run and sets loadSucceeded = true, allowing saveGachaState to proceed.
+  loadGachaState();
 });
 
 // ─── Tool registration ─────────────────────────────────────────────────────
@@ -91,16 +95,16 @@ describe('activate_buddy_interact', () => {
     expect(vi.mocked(writeFileSync)).toHaveBeenCalled();
   });
 
-  it('returns instruction string containing buddy name', async () => {
+  it('returns confirmation containing buddy name', async () => {
     S.currentBuddy = makeBuddy({ name: 'Chester' });
     const result = await getHandler('activate_buddy_interact')({});
     expect(result).toContain('Chester');
   });
 
-  it('returns instruction string with BUDDY INTERACTION MODE header', async () => {
-    S.currentBuddy = makeBuddy();
+  it('returns confirmation that buddy is watching', async () => {
+    S.currentBuddy = makeBuddy({ name: 'Chester' });
     const result = await getHandler('activate_buddy_interact')({});
-    expect(result).toContain('BUDDY INTERACTION MODE');
+    expect(result).toContain('watching');
   });
 });
 
@@ -133,67 +137,5 @@ describe('deactivate_buddy_interact', () => {
     const result = await getHandler('deactivate_buddy_interact')({});
     expect(result).toContain('Chester');
     expect(result).toContain('stops watching');
-  });
-});
-
-// ─── buildInteractInstruction ─────────────────────────────────────────────
-
-describe('buildInteractInstruction', () => {
-  it('includes buddy name', () => {
-    const result = buildInteractInstruction(makeBuddy({ name: 'Chester' }));
-    expect(result).toContain('Chester');
-  });
-
-  it('includes dominant stat trigger language', () => {
-    const buddy = makeBuddy({
-      stats: { DEBUGGING: 20, PATIENCE: 20, CHAOS: 20, WISDOM: 20, SNARK: 90 },
-    });
-    const result = buildInteractInstruction(buddy);
-    expect(result).toContain('SNARK');
-  });
-
-  it('includes HONK override for goose species', () => {
-    const buddy = makeBuddy({ species: 'goose' });
-    const result = buildInteractInstruction(buddy);
-    expect(result.toUpperCase()).toContain('HONK');
-  });
-
-  it('uses consistent 4-8 message cadence for capybara', () => {
-    const buddy = makeBuddy({ species: 'capybara' });
-    const result = buildInteractInstruction(buddy);
-    expect(result).toContain('every 4–8 messages');
-  });
-
-  it('uses consistent 4-8 message cadence for chaos dominant buddy', () => {
-    const buddy = makeBuddy({
-      stats: { DEBUGGING: 20, PATIENCE: 50, CHAOS: 90, WISDOM: 20, SNARK: 20 },
-    });
-    const result = buildInteractInstruction(buddy);
-    expect(result).toContain('every 4–8 messages');
-  });
-});
-
-// ─── INTERACT_TRIGGERS ────────────────────────────────────────────────────
-
-describe('INTERACT_TRIGGERS', () => {
-  const statNames = ['SNARK', 'CHAOS', 'WISDOM', 'DEBUGGING', 'PATIENCE'] as const;
-
-  it('has entries for all 5 stat names', () => {
-    for (const stat of statNames) {
-      expect(INTERACT_TRIGGERS[stat], `missing stat: ${stat}`).toBeDefined();
-    }
-  });
-
-  it('each stat has a random quip pool', () => {
-    for (const stat of statNames) {
-      expect(INTERACT_TRIGGERS[stat]?.['random']?.length).toBeGreaterThan(0);
-    }
-  });
-
-  it('each stat has error and success pools', () => {
-    for (const stat of statNames) {
-      expect(INTERACT_TRIGGERS[stat]?.['error']?.length).toBeGreaterThan(0);
-      expect(INTERACT_TRIGGERS[stat]?.['success']?.length).toBeGreaterThan(0);
-    }
   });
 });

@@ -4,6 +4,7 @@
 vi.mock('fs', () => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
+  renameSync: vi.fn(),
   existsSync: vi.fn(),
 }));
 
@@ -34,6 +35,9 @@ beforeEach(() => {
   gachaState.manifestedTools = [];
   gachaState.binaryMtime = undefined;
   S.currentBuddy = null;
+  // existsSync returns undefined (falsy) after clearAllMocks — loadGachaState treats
+  // this as first-run (no file) and sets loadSucceeded = true, allowing saves to proceed.
+  loadGachaState();
 });
 
 // ─── CORE_TOOL_NAMES ───────────────────────────────────────────────────────

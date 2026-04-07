@@ -2,7 +2,7 @@
 // Detached background watcher — spawned by reroll_buddy when the binary is locked (Windows EPERM).
 // Polls every 2 seconds until Claude Code closes, then auto-applies the pending patch and exits.
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { patchBinary } from '@/patcher/patch.js';
@@ -124,7 +124,18 @@ async function main(): Promise<void> {
           raw.discoveredSpecies.push(pending.profile.species);
         }
         if (pending.profile.shiny) raw.shinyCount = (raw.shinyCount ?? 0) + 1;
-        writeFileSync(GACHA_STATE_FILE, JSON.stringify(raw, null, 2));
+        const tmp = GACHA_STATE_FILE + '.tmp';
+        try {
+          writeFileSync(tmp, JSON.stringify(raw, null, 2));
+          renameSync(tmp, GACHA_STATE_FILE);
+        } catch (writeErr) {
+          try {
+            unlinkSync(tmp);
+          } catch {
+            /* ignore */
+          }
+          throw writeErr;
+        }
       } catch {
         // Non-fatal — gacha state self-heals on next server start
       }
