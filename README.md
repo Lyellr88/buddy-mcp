@@ -19,35 +19,29 @@ A break from long code sessions. Stuck on a bug? Reroll a buddy, talk with them,
 <tr>
 <td width="33%">
 
-<details>
-<summary><strong>Interactive Builder</strong></summary>
+**Interactive Builder**
+
 Build your perfect buddy with full control.
 
-<https://github.com/user-attachments/assets/840de2d0-617b-40fd-b653-c091af9abbfc>
-
-</details>
+[![Watch Video](https://img.shields.io/badge/▶%20Click%20to%20Watch-blue?style=for-the-badge)](https://github.com/user-attachments/assets/840de2d0-617b-40fd-b653-c091af9abbfc)
 
 </td>
 <td width="33%">
 
-<details>
-<summary><strong>Reroll in Action</strong></summary>
+**Reroll in Action**
+
 Roll, close Claude, reopen—new buddy live.
 
-<https://github.com/user-attachments/assets/83adc99e-2c49-4255-bf48-eca41d10580b>
-
-</details>
+[![Watch Video](https://img.shields.io/badge/▶%20Click%20to%20Watch-blue?style=for-the-badge)](https://github.com/user-attachments/assets/83adc99e-2c49-4255-bf48-eca41d10580b)
 
 </td>
 <td width="33%">
 
-<details>
-<summary><strong>Interact with Tools</strong></summary>
+**Interact with Tools**
+
 Talk, pet, and explore your buddy's dex.
 
-<https://github.com/user-attachments/assets/485c608f-55ed-40ed-a592-936814ea9601>
-
-</details>
+[![Watch Video](https://img.shields.io/badge/▶%20Click%20to%20Watch-blue?style=for-the-badge)](https://github.com/user-attachments/assets/485c608f-55ed-40ed-a592-936814ea9601)
 
 </td>
 </tr>
@@ -84,7 +78,9 @@ Built to be fast, local-first, and resilient to change.
 
 ## Patch Flow
 
-buddy-mcp patches the Claude binary directly. Here's what happens when you hit `reroll_buddy`:
+buddy-mcp patches the Claude binary directly with zero manual intervention. Here's the complete automatic pipeline:
+
+### Reroll (you run `reroll_buddy`)
 
 ```
 reroll_buddy
@@ -95,22 +91,37 @@ reroll_buddy
     │   └─ Each worker brute-forces salts using wyhash until traits match
     │
     ├─ Try to patch binary immediately
-    │   ├─ Success → "Close Claude and reopen"
-    │   └─ EPERM (Claude is running) → Save pending patch + start background watcher
-    │       └─ Watcher polls every 2s, applies patch the moment Claude closes
+    │   ├─ ✅ Success → Patch applied, restart Claude to see new buddy
+    │   └─ ⏳ EPERM (Claude is running)
+    │       ├─ Save pending patch to disk
+    │       ├─ Spawn background watcher (detached process)
+    │       ├─ Watcher polls every 2s for Claude to close
+    │       └─ The moment Claude closes → Watcher applies patch automatically
     │
     └─ Profile saved: species, rarity, stats, name, personality
+```
 
-On next session start (hook fires):
+**You only need to:** Close Claude when you're ready. Watcher handles the rest.
+
+### Claude Startup (hook runs automatically)
+
+```
+Claude Code launches
     │
-    ├─ Salt still valid → no-op (fast path)
-    │
-    ├─ Pending patch found → apply it
-    │
-    └─ Salt mismatch (Claude auto-updated)
-        ├─ Try .buddy-mcp-bak (only if it contains original salt)
-        ├─ Try .anybuddy-bak (fallback for prior patcher users)
-        └─ Restore + re-patch automatically, no reinstall required
+    └─ SessionStart hook fires (automatic)
+        │
+        ├─ ✅ Pending patch queued? → Apply it silently
+        │
+        ├─ ✅ Salt already in binary? → No-op (fast path)
+        │
+        └─ ⚠️ Salt mismatch (Claude was auto-updated)
+            ├─ Try original-salt fallback (usually succeeds)
+            ├─ If not, try restore from .buddy-mcp-bak
+            ├─ If not, try .anybuddy-bak (legacy fallback)
+            └─ Companion loads with correct stats/name even after update
+```
+
+**You don't need to do anything.** The hook runs silently and your buddy appears on next launch.
 
 ---
 
@@ -254,26 +265,46 @@ buddy-mcp stores everything in your home directory:
 
 ### Buddy doesn't change after reroll
 
-If you rerolled but your buddy didn't update on restart:
+**Normal flow (Windows):** When you reroll and Claude is running:
 
-1. **Close all Claude Code instances completely** (check Task Manager on Windows)
+1. Reroll triggers a background watcher — no action needed from you
+2. Close Claude Code whenever — watcher detects it and applies the patch automatically
+3. Reopen Claude Code — your new buddy is live
+
+If it doesn't appear after reopening:
+
+1. **Verify Claude is fully closed** (check Task Manager on Windows)
    - Even minimized or backgrounded windows count — they keep the binary locked
-   - Wait a few seconds for processes to fully exit
+   - Wait a few seconds after closing
 2. **Reopen Claude Code**
-   - The pending patch will apply automatically via the hook
-   - Or manually run `npm run apply` then reopen
+   - The startup hook auto-applies any pending patches
+   - You should see your new companion immediately
 
-The binary stays locked as long as any Claude instance is running, preventing the patch from being applied.
+### Prefer immediate patching?
 
-### Manual Apply (Fallback)
+If you want to guarantee a patch applies without waiting for the watcher, close Claude *before* rerolling:
 
-If the background watcher didn't fire for some reason, you can apply a pending patch manually:
+```bash
+# Option 1: Use the interactive TUI builder (simplest)
+buddy-mcp-build
+
+# Option 2: Close Claude, then use the reroll_buddy tool
+# (patch applies immediately without needing the watcher)
+```
+
+This is the only time you need manual steps — the watcher handles all other cases.
+
+### Manual Apply (Very Rare Edge Case)
+
+**Only if** you rerolled 30+ minutes ago and the watcher timed out without applying:
 
 ```bash
 npm run apply
 ```
 
-Then restart Claude Code.
+Then restart Claude Code. 
+
+(This fallback is automatic in 99% of cases — only needed if your system kept Claude open for an unusually long time.)
 
 ---
 
