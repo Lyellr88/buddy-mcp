@@ -243,10 +243,6 @@ Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak st
 ---
 
 
-```
-
-
----
 
 ## State Files
 
