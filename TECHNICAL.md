@@ -112,6 +112,43 @@ Queued patch written when Claude is running during a reroll. Consumed by the wat
 
 ---
 
+## Token Usage
+
+buddy-mcp runs as a persistent MCP server with 29 registered tools internally. Here's how token cost is kept minimal by design.
+
+### Tool Visibility (the main lever)
+
+The `ListTools` handler filters what Claude actually sees. Of the 29 registered tools:
+
+- **20 stat personality tools** — only **2 are exposed per session**, 1 from each of the buddy's top 2 stats. The other 18 are registered internally but never sent to the model.
+- **`activate_buddy_interact`** — always hidden from `ListTools`. It's wired but invisible.
+- **Result: Claude sees ~9 tools max**, regardless of how many are registered.
+
+This means the schema tax (Claude reading tool definitions on every session start) scales with visible tools, not total tools. 9 schemas, not 29.
+
+### Relay Protocol (one-time injection)
+
+The `BUDDY_RELAY_PROTOCOL` standing instruction is injected once per session on the first buddy display tool call. A session flag (`S.relayModeActive`) prevents re-injection on subsequent calls. After the first use it lives in context, but is never re-sent.
+
+### Tool Schemas (kept flat)
+
+All tool schemas are intentionally simple — mostly single optional string arguments or no arguments at all. No nested objects, no enum arrays, no complex validation. Smaller schemas = less context consumed per tool definition.
+
+### Inline Output (no extra round-trips)
+
+`buddy_talk`, `pet_buddy`, and stat tools return results directly in the tool response. No follow-up tool calls, no chained invocations. The relay protocol instructs Claude to forward output verbatim rather than narrate, which avoids generating a second response from scratch.
+
+### Summary
+
+| Factor | Naive MCP | buddy-mcp |
+|--------|-----------|-----------|
+| Tools visible to Claude | 29 | ~9 |
+| Schema injections per session | 29 | ~9 |
+| Relay protocol injections | — | 1 per session |
+| Tool output round-trips | varies | 1 per call |
+
+---
+
 ## Manual Apply (Very Rare Edge Case)
 
 **Only if** you rerolled 30+ minutes ago and the watcher timed out without applying:

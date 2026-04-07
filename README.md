@@ -60,6 +60,8 @@ Claude Code's companion is generated from a salt string baked into the binary. b
 
 No companion server. No cloud. Just you, your binary, and the gacha gods.
 
+Token footprint is kept intentionally small — of 29 registered tools, Claude only ever sees ~9 at a time. The other 20 stay hidden until you reroll. See [TECHNICAL.md](TECHNICAL.md) for the full breakdown.
+
 ---
 
 > 🛠️ **Looking for the technical deep-dive?** See [TECHNICAL.md](TECHNICAL.md) for the patch flow diagrams, binary patching logic, and state file reference.
