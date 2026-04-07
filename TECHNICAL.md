@@ -56,10 +56,9 @@ Claude Code launches
         ├─ ✅ Salt already in binary? → No-op (fast path)
         │
         └─ ⚠️ Salt mismatch (Claude was auto-updated)
-            ├─ Try original-salt fallback (usually succeeds)
-            ├─ If not, try restore from .buddy-mcp-bak
-            ├─ If not, try .anybuddy-bak (legacy fallback)
-            └─ Companion loads with correct stats/name even after update
+            ├─ Try ORIGINAL_SALT (fresh binary from update) → re-patch + restore name/personality
+            ├─ If not, restore from .buddy-mcp-bak or .anybuddy-bak → re-patch
+            └─ If all fail → "Run buddy-mcp-build restore, or reinstall Claude Code"
 ```
 
 **You don't need to do anything.** The hook runs silently and your buddy appears on next launch.
@@ -70,11 +69,46 @@ Claude Code launches
 
 buddy-mcp stores everything in your home directory:
 
-| File | Purpose |
-|------|---------|
-| `~/.buddy-mcp.json` | Your buddy profiles (species, rarity, stats, name, salt) |
-| `~/.buddy_mcp_gacha.json` | Gacha extras: shiny count, BuddyDex, manifested tools |
-| `~/.buddy_mcp_pending.json` | Queued patch waiting for Claude to close |
+### `~/.buddy-mcp.json`
+Your buddy profiles and active session pointer.
+
+| Field | Description |
+|-------|-------------|
+| `activeProfile` | Salt key of the currently active buddy |
+| `salt` | Active salt (legacy top-level field) |
+| `profiles` | Dict of all saved buddy profiles keyed by salt |
+| `profiles[salt].species` | Species name (duck, dragon, turtle, etc.) |
+| `profiles[salt].rarity` | Rarity tier (common → legendary) |
+| `profiles[salt].stats` | Stat object: DEBUGGING, PATIENCE, CHAOS, WISDOM, SNARK |
+| `profiles[salt].name` | Buddy name (set by you or auto-generated) |
+| `profiles[salt].personality` | Personality description used by buddy_talk |
+| `profiles[salt].shiny` | Whether this buddy is shiny |
+| `profiles[salt].createdAt` | ISO timestamp of when this buddy was rolled |
+
+### `~/.buddy_mcp_gacha.json`
+Persistent gacha engine state — BuddyDex, tokens, tool locks, and binary tracking.
+
+| Field | Description |
+|-------|-------------|
+| `discoveredSpecies` | All species ever rolled — your BuddyDex |
+| `shinyCount` | Total shiny buddies ever rolled |
+| `visibleStatTools` | Locked stat tool names for current buddy (set once at reroll, stable until next roll) |
+| `interactMode` | Whether buddy companion mode is active (default: `true`) |
+| `sessionAffectionTokens` | Earned tokens from petting — each token guarantees rare+ on next reroll |
+| `sessionAffectionAccumulator` | Current petting progress toward next token (0–100) |
+| `binaryMtime` | Last known mtime of Claude binary — used to detect Claude updates |
+| `manifestedTools` | User-created dynamic tool definitions (persisted across sessions) |
+
+### `~/.buddy_mcp_pending.json`
+Queued patch written when Claude is running during a reroll. Consumed by the watcher or startup hook.
+
+| Field | Description |
+|-------|-------------|
+| `salt` | New salt to write into the binary |
+| `currentSalt` | Salt currently in the binary (patch from → to) |
+| `binaryPath` | Absolute path to the Claude binary |
+| `profile` | Full buddy profile to activate after patching |
+| `rolledAt` | ISO timestamp of the reroll |
 
 ---
 
