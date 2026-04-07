@@ -142,8 +142,8 @@ claude mcp add buddy-mcp node /path/to/dist/mcp/index.js
 ### Running the TUI Builder Locally
 
 ```bash
-node dist/tui/cli.js          # Node fallback (sequential prompts)
-bun dist/tui/cli.js           # Full animated TUI (requires Bun)
+node dist/tui/launcher.js     # Auto-detects Bun, falls back to sequential prompts
+bun dist/tui/launcher.js      # Force full animated TUI (requires Bun)
 ```
 
 ### Runtime Architecture
