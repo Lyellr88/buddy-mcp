@@ -19,39 +19,34 @@ A break from long code sessions. Stuck on a bug? Reroll a buddy, talk with them,
 <tr>
 <td width="33%">
 
-<details>
-<summary><strong>Interactive Builder</strong></summary>
-Build your perfect buddy with full control.
+**Interact with Tools**
 
-<https://github.com/user-attachments/assets/840de2d0-617b-40fd-b653-c091af9abbfc>
-
-</details>
-
-</td>
-<td width="33%">
-
-<details>
-<summary><strong>Reroll in Action</strong></summary>
-Roll, close Claude, reopen—new buddy live.
-
-<https://github.com/user-attachments/assets/83adc99e-2c49-4255-bf48-eca41d10580b>
-
-</details>
-
-</td>
-<td width="33%">
-
-<details>
-<summary><strong>Interact with Tools</strong></summary>
 Talk, pet, and explore your buddy's dex.
 
-<https://github.com/user-attachments/assets/485c608f-55ed-40ed-a592-936814ea9601>
+[![Watch Video](https://img.shields.io/badge/▶%20Click%20to%20Watch-blue?style=for-the-badge)](https://github.com/user-attachments/assets/485c608f-55ed-40ed-a592-936814ea9601)
 
-</details>
+</td>
+<td width="33%">
+
+**Reroll in Action**
+
+Roll, close Claude, reopen—new buddy live.
+
+[![Watch Video](https://img.shields.io/badge/▶%20Click%20to%20Watch-blue?style=for-the-badge)](https://github.com/user-attachments/assets/83adc99e-2c49-4255-bf48-eca41d10580b)
+
+</td>
+<td width="33%">
+
+**Interactive Builder**
+
+Build your perfect buddy with full control.
+
+[![Watch Video](https://img.shields.io/badge/▶%20Click%20to%20Watch-blue?style=for-the-badge)](https://github.com/user-attachments/assets/840de2d0-617b-40fd-b653-c091af9abbfc)
 
 </td>
 </tr>
 </table>
+
 
 ---
 
