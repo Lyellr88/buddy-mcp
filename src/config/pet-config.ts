@@ -7,8 +7,6 @@ import { getCompanionName, getCompanionPersonality } from './claude-config.ts';
 
 const OUR_CONFIG = join(homedir(), '.buddy-mcp.json');
 
-// --- v1 compat (used by apply --silent fast path) ---
-
 export function savePetConfig(data: PetConfig): void {
   writeFileSync(OUR_CONFIG, JSON.stringify(data, null, 2) + '\n');
 }
@@ -21,8 +19,6 @@ export function loadPetConfig(): PetConfig | null {
     return null;
   }
 }
-
-// --- v2 with profiles (keyed by salt) ---
 
 function migrateV1(v1: PetConfig): PetConfigV2 {
   const migrated: PetConfigV2 = {
@@ -64,21 +60,18 @@ function migrateNameKeyedProfiles(config: PetConfigV2): boolean {
   const entries = Object.entries(config.profiles);
   if (entries.length === 0) return false;
 
-  // If all keys already look like salts, no migration needed
   if (entries.every(([key]) => saltPattern.test(key))) return false;
 
   const newProfiles: Record<string, ProfileData> = {};
   for (const [key, profile] of entries) {
     if (saltPattern.test(key)) {
-      // Already salt-keyed
       newProfiles[key] = profile;
     } else {
-      // Old name-keyed entry — re-key by salt, store old key as display name
+      // Old name-keyed entry: re-key by salt, store old key as display name
       newProfiles[profile.salt] = {
         ...profile,
         name: profile.name ?? key,
       };
-      // Fix activeProfile if it pointed to the old name
       if (config.activeProfile === key) {
         config.activeProfile = profile.salt;
       }

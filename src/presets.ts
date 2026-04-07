@@ -29,7 +29,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '◉',
     hat: 'crown',
   },
-  // ─── Cat ───
   {
     name: 'Cozy Cat',
     description: 'A rare beanie cat with dreamy eyes',
@@ -46,7 +45,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '✦',
     hat: 'wizard',
   },
-  // ─── Capybara ───
   {
     name: 'Royal Capybara',
     description: 'An epic crowned capybara — chill royalty',
@@ -63,7 +61,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '·',
     hat: 'none',
   },
-  // ─── Ghost ───
   {
     name: 'Ghost in the Shell',
     description: 'A rare halo ghost with hollow eyes',
@@ -80,7 +77,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '×',
     hat: 'propeller',
   },
-  // ─── Penguin ───
   {
     name: 'Dapper Penguin',
     description: 'An epic penguin in a top hat — pure class',
@@ -89,7 +85,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '·',
     hat: 'tophat',
   },
-  // ─── Robot ───
   {
     name: 'Mad Scientist',
     description: 'A legendary robot with glitchy eyes and propeller',
@@ -106,7 +101,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '◉',
     hat: 'crown',
   },
-  // ─── Duck ───
   {
     name: 'Chaos Duck',
     description: 'An uncommon duck with a tiny duck on its head',
@@ -115,7 +109,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '×',
     hat: 'tinyduck',
   },
-  // ─── Goose ───
   {
     name: 'Horrible Goose',
     description: 'A rare goose with a halo — suspiciously innocent',
@@ -124,7 +117,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '·',
     hat: 'halo',
   },
-  // ─── Owl ───
   {
     name: 'Mystic Owl',
     description: 'A legendary wizard owl with piercing gaze',
@@ -133,7 +125,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '◉',
     hat: 'wizard',
   },
-  // ─── Mushroom ───
   {
     name: 'Spore Lord',
     description: 'An epic crowned mushroom — ruler of the forest floor',
@@ -142,7 +133,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '✦',
     hat: 'crown',
   },
-  // ─── Turtle ───
   {
     name: 'Tiny Tank',
     description: 'A rare turtle with a propeller — slow but airborne',
@@ -151,7 +141,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '·',
     hat: 'propeller',
   },
-  // ─── Blob ───
   {
     name: 'Blob Boss',
     description: 'An epic top-hat blob — formless but formal',
@@ -160,7 +149,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '✦',
     hat: 'tophat',
   },
-  // ─── Octopus ───
   {
     name: 'Kraken',
     description: 'A legendary crowned octopus — terror of the deep',
@@ -169,7 +157,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '◉',
     hat: 'crown',
   },
-  // ─── Axolotl ───
   {
     name: 'Angel Axolotl',
     description: 'A rare halo axolotl — too pure for this world',
@@ -178,7 +165,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '✦',
     hat: 'halo',
   },
-  // ─── Snail ───
   {
     name: 'Wizard Snail',
     description: 'A rare wizard snail — slow-cast spells only',
@@ -187,7 +173,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '✦',
     hat: 'wizard',
   },
-  // ─── Cactus ───
   {
     name: 'Desert Sage',
     description: 'A rare wizard cactus — prickly wisdom',
@@ -196,7 +181,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '°',
     hat: 'wizard',
   },
-  // ─── Rabbit ───
   {
     name: 'Top Hat Bunny',
     description: 'An epic rabbit in a top hat — pulled from it, now wears it',
@@ -205,7 +189,6 @@ export const PRESETS: readonly Preset[] = [
     eye: '·',
     hat: 'tophat',
   },
-  // ─── Chonk ───
   {
     name: 'Absolute Unit',
     description: 'A legendary crowned chonk — maximum gravitational presence',

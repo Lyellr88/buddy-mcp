@@ -20,8 +20,6 @@ import { saveGachaState, pickVisibleStatTools } from '../persistence.js';
 import { autoManifestTools } from './auto.js';
 import { wrapBuddyDisplay } from './relay.js';
 
-// --- Core tool handlers ---
-
 const buddyTalkTool = {
   tool: {
     name: 'buddy_talk',
@@ -40,7 +38,7 @@ const buddyTalkTool = {
   },
   handler: async (args: Record<string, unknown>) => {
     try {
-      S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+      S.petBuddyStreak = 0;
       S.lastToolCalled = 'buddy_talk';
       if (!S.currentBuddy) return 'Initialize a buddy first.';
       const context = typeof args.context === 'string' ? args.context : '';
@@ -73,7 +71,6 @@ const petBuddyTool = {
     }
     S.lastToolCalled = 'pet_buddy';
 
-    // Session affection mini-game: accumulate 1-15% toward a token
     const gain = Math.floor(Math.random() * 15) + 1;
     gachaState.sessionAffectionAccumulator += gain;
 
@@ -120,7 +117,6 @@ const petBuddyTool = {
       reaction = `${name} makes a sound like a dial-up modem. You're pretty sure they just rewrote your history file.`;
     else reaction = `${name} lets out a soft, digital chirp. *happy ${b.species} noises*`;
 
-    // Build affection message
     const affectionMsg = earnedToken
       ? `🤚 Petted! Token progress: +${gain}% → 🌟 **EARNED TOKEN!** 🌟 (have ${gachaState.sessionAffectionTokens})`
       : `🤚 Petted! Token progress: +${gain}% → ${gachaState.sessionAffectionAccumulator}/100`;
@@ -136,14 +132,12 @@ const rerollBuddyTool = {
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.petBuddyStreak = 0;
     S.lastToolCalled = 'reroll_buddy';
 
-    // 1. Get userId
     const userId = getClaudeUserId();
     if (userId === 'anon') return '❌ No userId found. Open Claude Code at least once first.';
 
-    // 3. Find binary
     let binaryPath: string;
     try {
       binaryPath = findClaudeBinary();
@@ -151,14 +145,12 @@ const rerollBuddyTool = {
       return `❌ Claude Code binary not found: ${(err as Error).message}`;
     }
 
-    // 3.5. Check for affection tokens
     let tokenUsed = false;
     if (gachaState.sessionAffectionTokens > 0) {
       gachaState.sessionAffectionTokens--;
       tokenUsed = true;
     }
 
-    // 4. Roll desired traits (boosted if token used)
     let desired: DesiredTraits;
     if (tokenUsed) {
       // Token gives guaranteed rare or better + boosted accessories
@@ -221,7 +213,7 @@ const rerollBuddyTool = {
     } catch (err: unknown) {
       const msg = (err as Error).message ?? '';
       if (msg.includes('Could not find salt')) {
-        // Try ORIGINAL_SALT — Claude may have auto-updated and restored it
+        // Try ORIGINAL_SALT: Claude may have auto-updated and restored it
         if (currentSalt !== ORIGINAL_SALT) {
           try {
             patchBinary(binaryPath, ORIGINAL_SALT, finderResult.salt);
@@ -262,12 +254,11 @@ const rerollBuddyTool = {
           ].join('\n');
         }
       }
-      // Any other error (EPERM, EBUSY) — binary locked, fall through to pending patch flow
+      // Any other error (EPERM, EBUSY): binary locked, fall through to pending patch flow
     }
 
-    // 7. Roll the result using the same hash the finder used — guarantees consistency
-    // Use bones directly from the finder result — the worker computed them using the
-    // native hash (Bun.hash in the wyhash subprocess), so we never need to re-hash here.
+    // Use bones directly from finder: the worker computed them with the native hash
+    // (Bun.hash in the wyhash subprocess), re-hashing here would produce different results.
     const bones = finderResult.bones;
     const profile: ProfileData = {
       salt: finderResult.salt,
@@ -285,7 +276,6 @@ const rerollBuddyTool = {
     const shinyTag = profile.shiny ? ' ✨ SHINY! ✨' : '';
 
     if (!patched) {
-      // Save pending patch then spawn a detached watcher that auto-applies when Claude closes
       const pending: PendingPatch = {
         salt: finderResult.salt,
         currentSalt,
@@ -301,29 +291,26 @@ const rerollBuddyTool = {
         } catch (writeErr) {
           try {
             unlinkSync(tmp);
-          } catch {
-            /* ignore */
-          }
+          } catch {}
           throw writeErr;
         }
         gachaState.sessionAffectionAccumulator = 0;
-        // Lock stat tools for new buddy now — stable until next reroll
+        // Lock stat tools now; stable until next reroll
         S.currentBuddy = { ...profile };
         pickVisibleStatTools();
         saveGachaState();
-        // Auto-install hook if not already present
         if (!isHookInstalled()) {
           try {
             installHook(process.argv[1]);
           } catch {
-            // Non-fatal — hook install failure shouldn't break the reroll
+            // Non-fatal: hook install failure shouldn't break the reroll
           }
         }
       } catch (err: unknown) {
         return `❌ Could not save pending patch: ${(err as Error).message}`;
       }
 
-      // Spawn watcher as fully detached — survives after MCP server exits
+      // Spawn watcher as fully detached: survives after MCP server exits
       const watcherPath = join(dirname(fileURLToPath(import.meta.url)), '../watcher.js');
       const watcherSpawned = existsSync(watcherPath);
       if (watcherSpawned) {
@@ -348,7 +335,6 @@ const rerollBuddyTool = {
       ].join('\n');
     }
 
-    // 8. Patch succeeded — save profile and update MCP state
     saveProfile(profile, { activate: true });
     S.currentBuddy = { ...profile };
     if (!gachaState.discoveredSpecies.includes(profile.species)) {
@@ -359,12 +345,11 @@ const rerollBuddyTool = {
     gachaState.sessionAffectionAccumulator = 0;
     pickVisibleStatTools();
     saveGachaState();
-    // Auto-install hook if not already present
     if (!isHookInstalled()) {
       try {
         installHook(process.argv[1]);
       } catch {
-        // Non-fatal — hook install failure shouldn't break the reroll
+        // Non-fatal: hook install failure shouldn't break the reroll
       }
     }
     autoManifestTools(S.currentBuddy);
@@ -385,7 +370,7 @@ const viewBuddyDexTool = {
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.petBuddyStreak = 0;
     S.lastToolCalled = 'view_buddy_dex';
     let output = '--- BUDDY DEX ---\n\n';
     for (let i = 0; i < SPECIES.length; i += 3) {
@@ -399,8 +384,6 @@ const viewBuddyDexTool = {
     return wrapBuddyDisplay(output);
   },
 };
-
-// --- Register core tools ---
 
 dynamicTools.set('pet_buddy', {
   ...petBuddyTool,

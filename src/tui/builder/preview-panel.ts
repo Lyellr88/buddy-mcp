@@ -37,19 +37,13 @@ export function createPreviewPanel(parent: OTUIRenderable): PreviewPanel {
       justifyContent: 'flex-start',
       flexShrink: 0,
     },
-    // Title line: "dragon ★★★★★"
     Text({ id: 'preview-title', content: '', height: 1 }),
-    // Spacer
     Text({ content: '', height: 1 }),
     // Sprite (fixed 5 lines for stability)
     Text({ id: 'preview-sprite', content: '\n\n\n\n', height: 5 }),
-    // Spacer
     Text({ content: '', height: 1 }),
-    // Details block
     Text({ id: 'preview-details', content: '', height: 4 }),
-    // Spacer before stats
     Text({ content: '', height: 1 }),
-    // Stats bar chart
     Text({ id: 'preview-stats', content: '', height: 5 }),
   );
 
@@ -75,15 +69,13 @@ export function createPreviewPanel(parent: OTUIRenderable): PreviewPanel {
     const bones = stateToBones(state);
     const color = RARITY_HEX[state.rarity];
 
-    // Title
     titleText.content = `${state.species} ${RARITY_STARS[state.rarity]}`;
     titleText.fg = color;
 
-    // Sprite — render frame 0, animation will advance via tick()
+    // Sprite: render frame 0, animation will advance via tick()
     renderSpriteAtFrame(bones, 0);
     spriteText.fg = color;
 
-    // Details -- use rarity color for values, dim for labels
     const hatLabel = state.rarity === 'common' ? 'none' : state.hat;
     const detailLines = [
       `Rarity:  ${state.rarity}`,
@@ -94,7 +86,6 @@ export function createPreviewPanel(parent: OTUIRenderable): PreviewPanel {
     detailsText.content = detailLines.join('\n');
     detailsText.fg = color;
 
-    // Stats bar chart
     if (state.statsMode === 'customize') {
       statsText.content = renderStatBars(state.peak, state.dump);
       statsText.fg = color;

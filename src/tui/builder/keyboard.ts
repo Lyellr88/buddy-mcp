@@ -82,7 +82,6 @@ export function setupKeyboard(
 
   keyInput.on('keypress', handleKeyPress);
 
-  // Focus the first field
   focusCurrent();
 
   return {

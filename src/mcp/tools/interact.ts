@@ -12,7 +12,7 @@ const activateBuddyInteractTool = {
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.petBuddyStreak = 0;
     S.lastToolCalled = 'activate_buddy_interact';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     if (gachaState.interactMode)
@@ -21,12 +21,11 @@ const activateBuddyInteractTool = {
     gachaState.interactMode = true;
     saveGachaState();
 
-    // Auto-install hook if not already present
     if (!isHookInstalled()) {
       try {
         installHook(process.argv[1]);
       } catch {
-        // Non-fatal — hook install failure shouldn't break the activate
+        // Non-fatal: hook install failure shouldn't break the activate
       }
     }
 
@@ -43,7 +42,7 @@ const deactivateBuddyInteractTool = {
     inputSchema: { type: 'object' as const, properties: {} },
   },
   handler: async () => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.petBuddyStreak = 0;
     S.lastToolCalled = 'deactivate_buddy_interact';
     if (!gachaState.interactMode) return "Buddy wasn't watching.";
 

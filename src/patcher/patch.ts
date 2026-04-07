@@ -50,7 +50,7 @@ export function patchBinary(binaryPath: string, oldSalt: string, newSalt: string
   }
 
   const backupPath = binaryPath + '.buddy-mcp-bak';
-  // Only write backup if this binary has the original salt — prevents poisoning
+  // Only write backup if this binary has the original salt: prevents poisoning
   // the backup with a post-update binary that's already broken.
   if (!existsSync(backupPath) && findAllOccurrences(buf, ORIGINAL_SALT).length > 0) {
     copyFileSync(binaryPath, backupPath);
@@ -73,17 +73,13 @@ export function patchBinary(binaryPath: string, oldSalt: string, newSalt: string
     } catch {
       try {
         unlinkSync(binaryPath);
-      } catch {
-        /* ignore */
-      }
+      } catch {}
       renameSync(tmpPath, binaryPath);
     }
   } catch (err) {
     try {
       unlinkSync(tmpPath);
-    } catch {
-      /* ignore */
-    }
+    } catch {}
 
     if (IS_WIN && (err as NodeJS.ErrnoException).code === 'EPERM') {
       throw new Error(
@@ -107,7 +103,6 @@ export function patchBinary(binaryPath: string, oldSalt: string, newSalt: string
   };
 }
 
-// Returns the best available backup path that contains ORIGINAL_SALT, or null.
 export function findRestorableBackup(binaryPath: string): string | null {
   const candidates = [binaryPath + '.buddy-mcp-bak', binaryPath + '.anybuddy-bak'];
   for (const candidate of candidates) {
@@ -144,17 +139,13 @@ export function restoreBinary(binaryPath: string): true {
     } catch {
       try {
         unlinkSync(binaryPath);
-      } catch {
-        /* ignore */
-      }
+      } catch {}
       renameSync(tmpPath, binaryPath);
     }
   } catch (err) {
     try {
       unlinkSync(tmpPath);
-    } catch {
-      /* ignore */
-    }
+    } catch {}
     if (IS_WIN && (err as NodeJS.ErrnoException).code === 'EPERM') {
       throw new Error(
         'Cannot restore: the binary is locked (Claude Code may be running).\n' +

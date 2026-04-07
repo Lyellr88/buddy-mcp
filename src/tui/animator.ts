@@ -1,10 +1,3 @@
-/**
- * Shared animation clock for sprite frame cycling.
- *
- * Lazily starts on first subscriber, stops when the last unsubscribes.
- * Timer is unref'd so it never prevents process exit.
- */
-
 export type TickFn = (frame: number) => void;
 
 export interface Animator {

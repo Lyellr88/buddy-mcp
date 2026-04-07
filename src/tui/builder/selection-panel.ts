@@ -37,8 +37,6 @@ export interface SelectionPanel {
   getState: () => BuilderState;
 }
 
-// --- Option generators ---
-
 function speciesOptions(): SelectOption[] {
   return SPECIES.map((s) => {
     const face = renderFace({ species: s, eye: '\u00B7' });
@@ -114,8 +112,6 @@ const DISABLED_OPTIONS: Record<string, SelectOption[]> = {
   ],
 };
 
-// --- Field label map ---
-
 const FIELD_LABELS: Record<BuilderField, string> = {
   species: 'Species',
   eye: 'Eyes',
@@ -126,8 +122,6 @@ const FIELD_LABELS: Record<BuilderField, string> = {
   peak: 'Best Stat',
   dump: 'Worst Stat',
 };
-
-// --- Styles ---
 
 const FOCUSED_SELECT = {
   selectedBackgroundColor: HIGHLIGHT_BG,
@@ -147,8 +141,6 @@ const UNFOCUSED_SELECT = {
   showDescription: false,
 } as const;
 
-// --- Section heights (minimum rows for the select content) ---
-
 const SECTION_HEIGHTS: Record<BuilderField, number> = {
   species: 5,
   eye: 6,
@@ -159,8 +151,6 @@ const SECTION_HEIGHTS: Record<BuilderField, number> = {
   peak: 3,
   dump: 3,
 };
-
-// --- Build one section ---
 
 function buildSection(field: BuilderField, options: SelectOption[]): ReturnType<typeof Box> {
   const h = SECTION_HEIGHTS[field];
@@ -185,8 +175,6 @@ function buildSection(field: BuilderField, options: SelectOption[]): ReturnType<
   );
 }
 
-// --- Main panel ---
-
 export function createSelectionPanel(
   parent: OTUIRenderable,
   initialState: BuilderState,
@@ -197,7 +185,6 @@ export function createSelectionPanel(
   const sectionBoxes = new Map<BuilderField, BoxRenderable>();
   let currentFocusedField: BuilderField | null = null;
 
-  // Track which fields are logically active (not disabled)
   const fieldEnabled = new Map<BuilderField, boolean>();
 
   const visibleFields = getVisibleFields(state);
@@ -212,7 +199,6 @@ export function createSelectionPanel(
     'dump',
   ];
 
-  // Initial options -- disabled fields get placeholder
   function getInitialOptions(field: BuilderField): SelectOption[] {
     const active = visibleFields.includes(field);
     fieldEnabled.set(field, active);
@@ -262,7 +248,6 @@ export function createSelectionPanel(
 
   parent.add(container);
 
-  // Resolve renderable references
   const containerRenderable = parent.findDescendantById('selection-panel') as
     | BoxRenderable
     | undefined;
@@ -277,7 +262,6 @@ export function createSelectionPanel(
     if (sectionEl) sectionBoxes.set(field, sectionEl);
   }
 
-  // Set initial selection indices for enabled fields
   const speciesSelect = selects.get('species');
   const eyeSelect = selects.get('eye');
   const raritySelect = selects.get('rarity');
@@ -299,14 +283,11 @@ export function createSelectionPanel(
     if (hatIdx >= 0) hatSelect?.setSelectedIndex(hatIdx);
   }
 
-  // Apply initial disabled styling
   for (const field of allFields) {
     if (!fieldEnabled.get(field)) {
       applyDisabledStyle(field);
     }
   }
-
-  // --- Styling ---
 
   function applyFocusStyle(field: BuilderField): void {
     const box = sectionBoxes.get(field);
@@ -358,7 +339,6 @@ export function createSelectionPanel(
     fieldEnabled.set(field, true);
     const sel = selects.get(field);
     if (!sel) return;
-    // Restore real options
     switch (field) {
       case 'hat':
         sel.options = hatOptions();
@@ -387,13 +367,11 @@ export function createSelectionPanel(
 
   function scrollToField(field: BuilderField): void {
     if (!contentRenderable) return;
-    // Use terminal rows minus chrome (outer border + help bar + padding ~ 4 rows)
     // Outer border (2) + help bar (1) + padding (1)
     const CHROME_HEIGHT = 4;
     const viewportHeight = (process.stdout.rows ?? 40) - CHROME_HEIGHT;
     if (viewportHeight <= 0) return;
 
-    // Calculate total content height and target section's Y position
     let targetY = 0;
     let totalHeight = 0;
     for (const f of allFields) {
@@ -403,23 +381,18 @@ export function createSelectionPanel(
     }
     const sectionH = SECTION_HEIGHTS[field] + 2;
 
-    // No scrolling needed if everything fits
     if (totalHeight <= viewportHeight) {
       scrollOffset = 0;
       contentRenderable.top = 0;
       return;
     }
 
-    // If section is above the viewport, scroll up
     if (targetY < scrollOffset) {
       scrollOffset = targetY;
-    }
-    // If section bottom is below the viewport, scroll down
-    else if (targetY + sectionH > scrollOffset + viewportHeight) {
+    } else if (targetY + sectionH > scrollOffset + viewportHeight) {
       scrollOffset = targetY + sectionH - viewportHeight;
     }
 
-    // Clamp
     const maxScroll = Math.max(0, totalHeight - viewportHeight);
     scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
 
@@ -441,8 +414,6 @@ export function createSelectionPanel(
     scrollToField(field);
   }
 
-  // --- Change handlers ---
-
   function emitChange(): void {
     onChange({ ...state });
   }
@@ -458,7 +429,6 @@ export function createSelectionPanel(
     }
   }
 
-  // Wire up SELECTION_CHANGED events
   speciesSelect?.on(
     SelectRenderableEvents.SELECTION_CHANGED,
     (_index: number, option: SelectOption) => {

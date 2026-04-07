@@ -125,7 +125,6 @@ export async function selectPreset(): Promise<Preset> {
       const color = RARITY_CHALK[p.rarity] || chalk.white;
       const face = renderFace({ species: p.species, eye: p.eye });
       const stars = RARITY_STARS[p.rarity] || '';
-      // Full sprite preview shown below the highlighted choice
       const bones = {
         species: p.species,
         eye: p.eye,

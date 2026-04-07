@@ -22,7 +22,6 @@ function buildCard(bones: Bones, companionName: string | null): string {
   const shinyTag = bones.shiny ? '  ✨ shiny' : '';
   const lines: string[] = [];
 
-  // Header
   if (companionName) {
     lines.push(`${companionName}  ·  ${bones.species} ${stars}${shinyTag}`);
   } else {
@@ -35,7 +34,6 @@ function buildCard(bones: Bones, companionName: string | null): string {
   const spriteLines = renderSprite(bones, 0).map((l) => l.trimEnd());
   lines.push(...spriteLines);
 
-  // Stats (always rolled, show all five)
   const statEntries = Object.entries(bones.stats) as [string, number][];
   if (statEntries.length > 0) {
     lines.push('');
@@ -47,9 +45,8 @@ function buildCard(bones: Bones, companionName: string | null): string {
   }
 
   lines.push('');
-  lines.push('made with buddy-mcp — github.com/lyellr88/buddy-mcp');
+  lines.push('made with buddy-mcp - github.com/lyellr88/buddy-mcp');
 
-  // Box
   const innerWidth = Math.max(...lines.map((l) => l.length));
   const rule = '─'.repeat(innerWidth + 4);
   const top = '╭' + rule + '╮';

@@ -55,12 +55,10 @@ function resolvePreset(
 async function selectCoreTraits(
   flags: CliFlags,
 ): Promise<Pick<DesiredTraits, 'species' | 'eye' | 'rarity' | 'hat'>> {
-  // --preset flag: resolve by name
   if (flags.preset) {
     return resolvePreset(flags.preset);
   }
 
-  // Manual selection
   const species = validateFlag('species', flags.species, SPECIES) ?? (await selectSpecies());
   const eye = validateFlag('eye', flags.eye, EYES) ?? (await selectEyes(species));
   const rarity = validateFlag('rarity', flags.rarity, RARITIES) ?? (await selectRarity());
@@ -80,14 +78,14 @@ async function runSequentialSelection(flags: CliFlags): Promise<DesiredTraits> {
   const shiny =
     flags.shiny ??
     (await confirm({
-      message: 'Shiny? (1% normally — search takes ~100x longer)',
+      message: 'Shiny? (1% normally, search takes ~100x longer)',
       default: false,
     }));
   const wantStats =
     flags.peak ||
     flags.dump ||
     (await confirm({
-      message: 'Customize stats? (best/worst stat — search takes ~20x longer)',
+      message: 'Customize stats? (best/worst stat, search takes ~20x longer)',
       default: false,
     }));
   let peak: DesiredTraits['peak'] = null;
@@ -125,7 +123,6 @@ async function selectTraits(flags: CliFlags): Promise<DesiredTraits> {
     return buildDesiredFromFlags(flags);
   }
 
-  // Try the OpenTUI builder
   try {
     const { canUseBuilder, runBuilder } = await import('../builder/index.ts');
     if (await canUseBuilder()) {
@@ -137,21 +134,19 @@ async function selectTraits(flags: CliFlags): Promise<DesiredTraits> {
     }
   } catch (err) {
     if (err instanceof CancelledError) throw err;
-    // OpenTUI import failed (e.g. running on Node) — fall through to sequential
+    // OpenTUI import failed (e.g. running on Node), fall through to sequential
   }
 
-  // Show warning if Bun is not available
   if (typeof globalThis.Bun === 'undefined') {
     console.log(
       chalk.yellow(
-        '  \u26A0  Bun is not installed — using basic prompts.\n' +
+        '  \u26A0  Bun is not installed, using basic prompts.\n' +
           '     Install Bun (https://bun.sh) for the interactive builder\n' +
           '     with live preview, and for correct hash cracking.\n',
       ),
     );
   }
 
-  // Fallback: sequential prompts
   return runSequentialSelection(flags);
 }
 
@@ -180,7 +175,7 @@ function runSetup(): SetupResult {
 
   const useNodeHash = isNodeRuntime(binaryPath);
   if (useNodeHash) {
-    console.log(chalk.dim('  Runtime: Node (using FNV-1a hash — npm install detected)'));
+    console.log(chalk.dim('  Runtime: Node (using FNV-1a hash, npm install detected)'));
   } else if (preflight.bunVersion) {
     console.log(chalk.dim(`  Bun:     v${preflight.bunVersion}`));
   }
@@ -233,7 +228,6 @@ async function applyDesiredTraits(
   flags: CliFlags,
   setup: SetupResult,
 ): Promise<void> {
-  // Try the OpenTUI apply flow
   try {
     const { canUseBuilder } = await import('../builder/index.ts');
     if (await canUseBuilder()) {
@@ -242,7 +236,7 @@ async function applyDesiredTraits(
       return;
     }
   } catch {
-    // OpenTUI unavailable — fall through to sequential
+    // OpenTUI unavailable, fall through to sequential
   }
 
   await applyDesiredTraitsSequential(desired, flags, setup);
@@ -255,7 +249,6 @@ async function applyDesiredTraitsSequential(
 ): Promise<void> {
   const existingConfig = loadPetConfig();
 
-  // Show preview of what was selected
   const previewBones = { ...desired, stats: {} };
   showPet(previewBones, 'Your selection');
 
@@ -271,7 +264,6 @@ async function applyDesiredTraitsSequential(
     return;
   }
 
-  // Find salt
   const expected = estimateAttempts(desired);
   console.log(chalk.dim(`\n  Searching (~${formatCount(expected)} expected attempts)...`));
 
@@ -302,7 +294,6 @@ async function applyDesiredTraitsSequential(
   const foundBones = roll(userId, result.salt, { useNodeHash }).bones;
   showPet(foundBones, 'Your new pet');
 
-  // Patch binary
   const current = getCurrentSalt(binaryPath);
   let oldSalt: string;
   if (!current.patched) {
@@ -321,7 +312,7 @@ async function applyDesiredTraitsSequential(
     return;
   }
 
-  // --- Save as profile (before patch decision — the salt search is the expensive part) ---
+  // Save as profile before patch decision: the salt search is the expensive part
   const profileName = (
     await input({
       message: 'Save this buddy? (name, or blank to skip)',
@@ -345,11 +336,10 @@ async function applyDesiredTraitsSequential(
     console.log(chalk.green(`  Saved buddy "${profileName}"`));
   }
 
-  // --- Apply now? ---
   const running = isClaudeRunning(binaryPath);
   if (running) {
     console.log(chalk.yellow('\n  Claude Code is currently running.'));
-    console.log(chalk.yellow('  The patch is safe (uses atomic rename — the running process'));
+    console.log(chalk.yellow('  The patch is safe (uses atomic rename, the running process'));
     console.log(chalk.yellow("  keeps using the old binary in memory), but the change won't"));
     console.log(chalk.yellow('  take effect until you restart Claude Code.\n'));
   }
@@ -404,14 +394,13 @@ async function applyDesiredTraitsSequential(
     const mcpPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'mcp', 'index.js');
     installHook(mcpPath);
     console.log(
-      chalk.dim('  SessionStart hook installed — pet auto-re-applies after Claude Code updates.'),
+      chalk.dim('  SessionStart hook installed, pet auto-re-applies after Claude Code updates.'),
     );
     console.log(chalk.dim('  (To remove: edit ~/.claude/settings.json)'));
   } else if (isHookInstalled()) {
     console.log(chalk.dim('  SessionStart hook active.'));
   }
 
-  // Rename & Personality
   const currentName = getCompanionName();
   const currentPersonality = getCompanionPersonality();
   const hasCompanion = !!(currentName && currentPersonality);
@@ -468,7 +457,7 @@ async function applyDesiredTraitsSequential(
       }
     }
   } else {
-    console.log(chalk.dim('\n  No companion hatched yet — the visual patch has been applied.'));
+    console.log(chalk.dim('\n  No companion hatched yet, the visual patch has been applied.'));
     console.log(
       chalk.dim(
         '  Run /buddy in Claude Code to hatch your companion and get a name & personality.',

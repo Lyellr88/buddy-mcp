@@ -4,37 +4,30 @@ import { S, dynamicTools } from '../state.js';
 import { getPersonalityRemark } from '@/personalities.js';
 import { wrapBuddyDisplay } from './relay.js';
 
-// --- Stat personality tools ---
-
 export const STAT_TOOL_NAMES = new Set([
-  // DEBUGGING
   'deep_trace',
   'trace_nightmare',
   'null_hunt',
   'stack_dive',
-  // PATIENCE
   'patience_check',
   'wait_wisdom',
   'vibe_check',
   'still_point',
-  // CHAOS
   'chaos_audit',
   'chaos_roulette',
   'chaos_spark',
   'entropy_roll',
-  // WISDOM
   'zen_consult',
   'zen_mirror',
   'oracle_seek',
   'deep_thought',
-  // SNARK
   'snark_roast',
   'snark_savage',
   'side_eye',
   'snark_verdict',
 ]);
 
-// Maps each stat to its 4 tools — 1 random shown when stat is in top 2 by raw value
+// Maps each stat to its 4 tools: 1 random shown when stat is in top 2 by raw value
 export const STAT_TOOLS_MAP: Record<StatName, [string, string, string, string]> = {
   DEBUGGING: ['deep_trace', 'trace_nightmare', 'null_hunt', 'stack_dive'],
   PATIENCE: ['patience_check', 'wait_wisdom', 'vibe_check', 'still_point'],
@@ -77,7 +70,7 @@ function makeTool(
   dynamicTools.set(toolName, {
     tool: { name: toolName, description, inputSchema },
     handler: async (args) => {
-      S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+      S.petBuddyStreak = 0;
       S.lastToolCalled = toolName;
       return respond(stat, context, args);
     },
@@ -85,7 +78,6 @@ function makeTool(
   });
 }
 
-// DEBUGGING tools
 makeTool(
   'deep_trace',
   '[Buddy Tool] A focused search for bugs or null pointers. (global)',
@@ -111,7 +103,7 @@ makeTool(
   'dive',
 );
 
-// PATIENCE tools — includes vibe_check (moved from core with its cosmic logic intact)
+// PATIENCE tools: includes vibe_check (moved from core with its cosmic logic intact)
 makeTool(
   'patience_check',
   '[Buddy Tool] Check if the buddy is still willing to help you. (global)',
@@ -158,7 +150,6 @@ dynamicTools.set('vibe_check', {
   },
 });
 
-// CHAOS tools
 makeTool(
   'chaos_audit',
   '[Buddy Tool] An unpredictable check that might not help at all. (global)',
@@ -184,7 +175,6 @@ makeTool(
   'entropy',
 );
 
-// WISDOM tools
 makeTool(
   'zen_consult',
   '[Buddy Tool] A deep, philosophical insight into your architecture. (global)',
@@ -210,7 +200,6 @@ makeTool(
   'deep',
 );
 
-// SNARK tools
 makeTool(
   'snark_roast',
   '[Buddy Tool] A sarcastic critique of your current work. (global)',

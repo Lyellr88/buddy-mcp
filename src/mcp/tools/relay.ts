@@ -1,8 +1,7 @@
 import { S } from '../state.js';
 
-// All buddy display tools — the relay instruction is scoped exclusively to these
+// All buddy display tools: the relay instruction is scoped exclusively to these
 const BUDDY_DISPLAY_TOOLS = [
-  // Core display tools
   'buddy_talk',
   'pet_buddy',
   'view_buddy_dex',
@@ -27,7 +26,6 @@ const BUDDY_DISPLAY_TOOLS = [
   'snark_savage',
   'side_eye',
   'snark_verdict',
-  // Interact tools
   'activate_buddy_interact',
   'deactivate_buddy_interact',
 ].join(', ');

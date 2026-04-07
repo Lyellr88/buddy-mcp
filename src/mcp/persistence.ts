@@ -4,11 +4,9 @@ import type { GachaState, ManifestedToolDefinition } from './state.js';
 import { S, gachaState, dynamicTools, GACHA_STATE_FILE } from './state.js';
 import { STAT_TOOLS_MAP } from './tools/stats.js';
 
-// --- Persistence ---
-
 // Guards saveGachaState() from overwriting a file that failed to load (corrupted).
 // Set to true on successful load or on first run (no file yet). Stays false only
-// when the file exists but could not be parsed — in that case we refuse to save
+// when the file exists but could not be parsed: in that case we refuse to save
 // over what might be a recoverable file.
 let loadSucceeded = false;
 
@@ -21,27 +19,22 @@ export const CORE_TOOL_NAMES = new Set([
   'export_buddy_sprite',
   'activate_buddy_interact',
   'deactivate_buddy_interact',
-  // DEBUGGING tools
   'deep_trace',
   'trace_nightmare',
   'null_hunt',
   'stack_dive',
-  // PATIENCE tools
   'patience_check',
   'wait_wisdom',
   'vibe_check',
   'still_point',
-  // CHAOS tools
   'chaos_audit',
   'chaos_roulette',
   'chaos_spark',
   'entropy_roll',
-  // WISDOM tools
   'zen_consult',
   'zen_mirror',
   'oracle_seek',
   'deep_thought',
-  // SNARK tools
   'snark_roast',
   'snark_savage',
   'side_eye',
@@ -50,7 +43,7 @@ export const CORE_TOOL_NAMES = new Set([
 
 export function saveGachaState(): void {
   if (!loadSucceeded) {
-    console.error('Skipping gacha state save — previous load failed (file may be corrupted).');
+    console.error('Skipping gacha state save: previous load failed (file may be corrupted).');
     return;
   }
   const toolsToSave = Array.from(dynamicTools.values())
@@ -63,16 +56,14 @@ export function saveGachaState(): void {
   } catch (err) {
     try {
       unlinkSync(tmp);
-    } catch {
-      /* ignore — tmp may not exist */
-    }
+    } catch {}
     console.error('Failed to save gacha state:', err);
   }
 }
 
 export function loadGachaState(): void {
   if (!existsSync(GACHA_STATE_FILE)) {
-    // First run — no file yet, valid empty state
+    // First run: no file yet, valid empty state
     loadSucceeded = true;
     return;
   }
@@ -83,7 +74,6 @@ export function loadGachaState(): void {
     gachaState.binaryMtime = raw.binaryMtime ?? undefined;
     gachaState.interactMode = raw.interactMode ?? false;
     gachaState.visibleStatTools = raw.visibleStatTools ?? [];
-    // Restore manifested tools from previous session
     for (const def of raw.manifestedTools ?? []) {
       if (!CORE_TOOL_NAMES.has(def.toolName)) {
         registerManifestedTool(
@@ -97,12 +87,12 @@ export function loadGachaState(): void {
     }
     loadSucceeded = true;
   } catch (err) {
-    console.error('Failed to load gacha state (file may be corrupted — will not overwrite):', err);
-    // loadSucceeded stays false — saveGachaState() will refuse to run
+    console.error('Failed to load gacha state (file may be corrupted: will not overwrite):', err);
+    // loadSucceeded stays false: saveGachaState() will refuse to run
   }
 }
 
-// Picks and locks 1 stat tool from each of the top 2 stats. Call once per reroll — stable until next roll.
+// Picks and locks 1 stat tool from each of the top 2 stats. Call once per reroll, stable until next roll.
 export function pickVisibleStatTools(): void {
   if (!S.currentBuddy) {
     gachaState.visibleStatTools = [];
@@ -118,8 +108,6 @@ export function pickVisibleStatTools(): void {
   }
   gachaState.visibleStatTools = picked;
 }
-
-// --- Dynamic tool system ---
 
 export function registerManifestedTool(
   name: string,

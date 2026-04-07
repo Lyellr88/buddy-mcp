@@ -4,8 +4,6 @@ import { join } from 'path';
 import { homedir } from 'os';
 import type { ProfileData } from '@/types.js';
 
-// --- MCP-layer types ---
-
 export type McpBuddy = ProfileData;
 
 export interface GachaState {
@@ -37,8 +35,6 @@ export interface PendingPatch {
   profile: ProfileData;
   rolledAt: string;
 }
-
-// --- Shared mutable state ---
 
 export const S = {
   currentBuddy: null as McpBuddy | null,

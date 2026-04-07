@@ -220,9 +220,7 @@ export async function runPresetsTUI(): Promise<Preset | null> {
     if (renderer) {
       try {
         renderer.destroy();
-      } catch {
-        /* ignore */
-      }
+      } catch {}
     }
     console.error(`  Presets browser error: ${(err as Error).message}`);
     console.error(`  If this persists, please report at: ${ISSUE_URL}`);

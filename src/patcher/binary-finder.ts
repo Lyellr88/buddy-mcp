@@ -16,9 +16,7 @@ function which(cmd: string): string | null {
     }).trim();
     const first = result.split(/\r?\n/)[0].trim();
     if (first && existsSync(first)) return first;
-  } catch {
-    /* ignore */
-  }
+  } catch {}
   return null;
 }
 
@@ -74,9 +72,7 @@ function resolveWindowsShim(cmdPath: string): string | null {
       const target = join(shimDir, match[0]);
       if (existsSync(target)) return target;
     }
-  } catch {
-    /* ignore */
-  }
+  } catch {}
   return null;
 }
 
@@ -93,9 +89,7 @@ function resolveFromPackageDir(resolvedPath: string): string | null {
       const size = statSync(candidate).size;
       if (size >= 1_000_000) return candidate;
     }
-  } catch {
-    /* ignore */
-  }
+  } catch {}
   return null;
 }
 

@@ -12,7 +12,6 @@ const MIN_COLS = 70;
 const MIN_ROWS = 18;
 
 export async function canUseBuilder(): Promise<boolean> {
-  // Must be a TTY
   if (!process.stdout.isTTY || !process.stdin.isTTY) return false;
 
   // Respect accessibility / dumb terminal
@@ -21,12 +20,10 @@ export async function canUseBuilder(): Promise<boolean> {
   // Must be running under Bun (OpenTUI requires it)
   if (typeof globalThis.Bun === 'undefined') return false;
 
-  // Terminal must be large enough
   const cols = process.stdout.columns ?? 0;
   const rows = process.stdout.rows ?? 0;
   if (cols < MIN_COLS || rows < MIN_ROWS) return false;
 
-  // Try to load OpenTUI
   try {
     await import('@opentui/core');
     return true;
@@ -82,7 +79,6 @@ export async function runBuilder(
         resolve(result);
       }
 
-      // Root layout: column with main content row + pinned help bar
       const title = browseOnly ? ' buddy-cli preview ' : ' buddy-cli ';
       const rootBox = Box(
         {
@@ -97,14 +93,12 @@ export async function runBuilder(
           titleAlignment: 'center',
           padding: 0,
         },
-        // Main content row (selection + preview)
         Box({
           id: 'main-row',
           flexDirection: 'row',
           flexGrow: 1,
           width: '100%',
         }),
-        // Pinned help bar at bottom -- always visible
         Text({
           id: 'help-bar',
           content: '  \u2191\u2193 select   Tab/Enter next   Shift+Tab prev   Esc cancel',
@@ -123,15 +117,13 @@ export async function runBuilder(
         return;
       }
 
-      // Selection panel (left) — added first so it's on the left
+      // Selection panel (left): added first so it's on the left
       const selection = createSelectionPanel(mainRow, initialState, (state: BuilderState) => {
         preview.update(state);
       });
 
-      // Preview panel (right)
       const preview = createPreviewPanel(mainRow);
 
-      // Initial preview render + start animation
       preview.update(initialState);
       unsubAnimation = animator.subscribe((frame) => preview.tick(frame));
 
@@ -140,7 +132,6 @@ export async function runBuilder(
         ? '  Enter/Y exit   Esc/N go back'
         : '  Enter/Y confirm & apply   Esc/N go back and edit';
 
-      // Keyboard navigation
       const startField = firstUnfilledField(flags);
       const keyboard = setupKeyboard(r.keyInput, {
         getState: selection.getState,
@@ -169,25 +160,17 @@ export async function runBuilder(
         },
       });
 
-      // Focus the first unfilled field
       selection.focusField(startField);
 
-      // Handle Ctrl+C
       r.keyInput.on('keypress', handleCtrlC);
-
-      // Start rendering
       r.auto();
     });
   } catch (err) {
-    // Clean up on error
     if (renderer) {
       try {
         renderer.destroy();
-      } catch {
-        // ignore cleanup errors
-      }
+      } catch {}
     }
-    // Log the error and return null so the caller can fall back
     console.error(`  Builder error: ${(err as Error).message}`);
     console.error(`  If this persists, please report at: ${ISSUE_URL}`);
     return null;

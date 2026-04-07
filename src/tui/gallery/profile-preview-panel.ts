@@ -39,19 +39,15 @@ export function createGalleryPreviewPanel(parent: OTUIRenderable): GalleryPrevie
       alignItems: 'center',
       justifyContent: 'flex-start',
     },
-    // Name (centered nameplate)
     Text({ id: 'gp-name', content: '', height: 1 }),
     Text({ content: '', height: 1 }),
-    // Title: "dragon ★★★★★"
     Text({ id: 'gp-title', content: '', height: 1 }),
     Text({ content: '', height: 1 }),
     // Sprite (5 lines)
     Text({ id: 'gp-sprite', content: '\n\n\n\n', height: 5 }),
     Text({ content: '', height: 1 }),
-    // Details
     Text({ id: 'gp-details', content: '', height: 4 }),
     Text({ content: '', height: 1 }),
-    // Stats
     Text({ id: 'gp-stats', content: '', height: 5 }),
     Text({ content: '', height: 1 }),
     // Personality (bottom, left-aligned, clips naturally via overflow)
@@ -84,12 +80,10 @@ export function createGalleryPreviewPanel(parent: OTUIRenderable): GalleryPrevie
     const { bones, profile } = entry;
     const color = RARITY_HEX[bones.rarity];
 
-    // Name (centered nameplate)
     const name = profile?.name ?? (entry.isDefault ? 'Original Pet' : entry.name);
     nameText.content = name;
     nameText.fg = color;
 
-    // Title
     titleText.content = `${bones.species} ${RARITY_STARS[bones.rarity]}`;
     titleText.fg = color;
 
@@ -97,7 +91,6 @@ export function createGalleryPreviewPanel(parent: OTUIRenderable): GalleryPrevie
     renderSpriteAtFrame(bones, 0);
     spriteText.fg = color;
 
-    // Details
     const detailLines = [
       `Rarity:  ${bones.rarity}`,
       `Eyes:    ${bones.eye}`,
@@ -107,7 +100,6 @@ export function createGalleryPreviewPanel(parent: OTUIRenderable): GalleryPrevie
     detailsText.content = detailLines.join('\n');
     detailsText.fg = color;
 
-    // Stats
     const statContent = renderStatBarsFromStats(bones.stats);
     if (statContent) {
       statsText.content = statContent;
@@ -118,7 +110,6 @@ export function createGalleryPreviewPanel(parent: OTUIRenderable): GalleryPrevie
       statsText.visible = false;
     }
 
-    // Personality (bottom, clips via overflow: hidden)
     const personality = profile?.personality;
     if (personality) {
       personalityText.content = `"${personality}"`;

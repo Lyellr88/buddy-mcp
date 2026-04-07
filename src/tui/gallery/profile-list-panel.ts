@@ -73,7 +73,6 @@ export function createProfileListPanel(
   const containerRenderable = parent.findDescendantById('profile-list') as BoxRenderable;
   const select = containerRenderable?.findDescendantById('buddy-select') as SelectRenderable | null;
 
-  // Focus the Select so it receives keyboard events immediately
   select?.focus();
 
   return {

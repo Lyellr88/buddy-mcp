@@ -35,8 +35,6 @@ export const DEFAULT_PERSONALITIES: Record<Species, string> = {
     'An absolute unit of a companion who sits on your terminal with maximum gravitational presence and minimal urgency.',
 };
 
-// --- Personality system ---
-
 // Stat-based remark pools (StatName keys = uppercase)
 export const REMARKS: Record<string, string[]> = {
   SNARK: [
@@ -272,11 +270,9 @@ export function getPersonalityRemark(buddy: ProfileData): string {
   if (buddy.species === 'goose' && Math.random() < 0.3) {
     return GOOSE_REMARKS[Math.floor(Math.random() * GOOSE_REMARKS.length)] ?? 'HONK.';
   }
-  // 50% chance: use the species personality bio
   if (Math.random() < 0.5) {
     return DEFAULT_PERSONALITIES[buddy.species];
   }
-  // Otherwise: stat-based remark
   const sorted = getExtremeTraits(buddy.stats);
   const topTrait = sorted[Math.floor(Math.random() * 2)]?.[0] ?? 'WISDOM';
   const pool = REMARKS[topTrait] ?? REMARKS['WISDOM'] ?? [];
@@ -286,7 +282,6 @@ export function getPersonalityRemark(buddy: ProfileData): string {
 }
 
 export function getSpeakRemark(buddy: ProfileData, context?: string): string {
-  // Get top 2 stats by raw value
   const sorted = getExtremeTraits(buddy.stats);
   const topStats = [sorted[0]?.[0], sorted[1]?.[0]].filter(Boolean) as StatName[];
 
@@ -298,18 +293,15 @@ export function getSpeakRemark(buddy: ProfileData, context?: string): string {
       stat.toLowerCase().includes(contextLower.split(' ')[0]!),
     );
     if (!selectedStat) {
-      // Try partial match against all stat names
       const allStats: StatName[] = ['DEBUGGING', 'PATIENCE', 'CHAOS', 'WISDOM', 'SNARK'];
       selectedStat = allStats.find((stat) => contextLower.includes(stat.toLowerCase()));
     }
   }
 
-  // If context didn't match, pick randomly from top 2 stats
   if (!selectedStat) {
     selectedStat = topStats[Math.floor(Math.random() * topStats.length)] ?? 'WISDOM';
   }
 
-  // Get response template pool for selected stat
   const pool = STAT_SPEAK_RESPONSES[selectedStat] ?? STAT_SPEAK_RESPONSES['WISDOM'] ?? [];
   return (
     pool[Math.floor(Math.random() * pool.length)] ?? 'The best code is the code you never write.'

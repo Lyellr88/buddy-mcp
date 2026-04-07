@@ -41,7 +41,6 @@ export async function runRestore(): Promise<void> {
     console.log(chalk.dim('  Removed SessionStart hook.'));
   }
 
-  // Preserve saved profiles for future use
   const existingV2 = loadPetConfigV2();
   const profiles = existingV2?.profiles ?? {};
   savePetConfigV2({

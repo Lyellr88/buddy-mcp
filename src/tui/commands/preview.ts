@@ -77,7 +77,6 @@ export async function runPreview(flags: CliFlags = {}): Promise<void> {
   if (!preflight.ok) process.exit(1);
 
   if (allTraitsFlagged(flags)) {
-    // All traits specified via flags -- just render directly
     const species = validateFlag('species', flags.species, SPECIES) ?? SPECIES[0];
     const eye = validateFlag('eye', flags.eye, EYES) ?? EYES[0];
     const rarity = validateFlag('rarity', flags.rarity, RARITIES) ?? RARITIES[0];
@@ -90,7 +89,6 @@ export async function runPreview(flags: CliFlags = {}): Promise<void> {
     return;
   }
 
-  // Try the OpenTUI builder in browse-only mode
   try {
     const { canUseBuilder, runBuilder } = await import('../builder/index.ts');
     if (await canUseBuilder()) {
@@ -102,17 +100,15 @@ export async function runPreview(flags: CliFlags = {}): Promise<void> {
     // OpenTUI unavailable -- fall through
   }
 
-  // Show warning if Bun is not available
   if (typeof globalThis.Bun === 'undefined') {
     console.log(
       chalk.yellow(
-        '  \u26A0  Bun is not installed — using basic prompts.\n' +
+        '  \u26A0  Bun is not installed, using basic prompts.\n' +
           '     Install Bun (https://bun.sh) for the interactive builder\n' +
           '     with live preview.\n',
       ),
     );
   }
 
-  // Fallback: sequential prompts
   await runSequentialPreview(flags);
 }

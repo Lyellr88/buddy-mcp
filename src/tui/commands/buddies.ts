@@ -34,7 +34,7 @@ async function selectBuddyFallback(entries: GalleryEntry[]): Promise<string | nu
     const dot = entry.isActive ? '●' : '○';
     const stars = RARITY_STARS[entry.bones.rarity];
     return {
-      name: `${dot} ${entry.name} — ${entry.bones.species} ${stars}`,
+      name: `${dot} ${entry.name} - ${entry.bones.species} ${stars}`,
       value: entry.salt,
     };
   });
@@ -68,7 +68,6 @@ export async function runBuddies(): Promise<void> {
   const entries = buildGalleryEntries(userId, binaryPath);
   const startIndex = activeEntryIndex(entries);
 
-  // Try OpenTUI gallery, fallback to sequential
   let selectedName: string | null = null;
 
   try {
@@ -85,7 +84,7 @@ export async function runBuddies(): Promise<void> {
       selectedName = result.profileName;
     }
   } catch {
-    // OpenTUI not available — fall through
+    // OpenTUI not available, fall through
   }
 
   if (selectedName === null) {
@@ -105,14 +104,12 @@ export async function runBuddies(): Promise<void> {
   // selectedName is now a salt (or DEFAULT_PROFILE)
   const selectedSalt = selectedName;
 
-  // Skip if already active
   const selectedEntry = entries.find((e) => e.salt === selectedSalt);
   if (selectedEntry?.isActive) {
     console.log(chalk.dim('\n  Already active.\n'));
     return;
   }
 
-  // Snapshot outgoing profile's companion identity
   const activeSalt = config?.activeProfile;
   if (activeSalt && config?.profiles[activeSalt]) {
     const outgoing = config.profiles[activeSalt];
@@ -121,7 +118,6 @@ export async function runBuddies(): Promise<void> {
     saveProfile(outgoing);
   }
 
-  // Find the old salt in binary
   const oldSalt = config?.salt ?? ORIGINAL_SALT;
   const isDefault = selectedSalt === DEFAULT_PROFILE;
   const newSalt = isDefault ? ORIGINAL_SALT : selectedSalt;
@@ -131,7 +127,6 @@ export async function runBuddies(): Promise<void> {
     return;
   }
 
-  // Patch binary
   let patched = false;
   for (const trySalt of [oldSalt, ORIGINAL_SALT]) {
     if (!trySalt) continue;
@@ -155,9 +150,8 @@ export async function runBuddies(): Promise<void> {
     return;
   }
 
-  // Update config — reload fresh before writing to avoid clobbering saveProfile(outgoing) above
+  // Update config: reload fresh before writing to avoid clobbering saveProfile(outgoing) above
   if (isDefault) {
-    // Reload fresh so we don't clobber profile writes made by saveProfile(outgoing) above
     const freshConfig = loadPetConfigV2();
     if (freshConfig) {
       freshConfig.previousSalt = freshConfig.salt;
@@ -175,11 +169,11 @@ export async function runBuddies(): Promise<void> {
     const mcpPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'mcp', 'index.js');
     installHook(mcpPath);
     console.log(
-      chalk.dim('  SessionStart hook installed — pet auto-re-applies after Claude Code updates.'),
+      chalk.dim('  SessionStart hook installed, pet auto-re-applies after Claude Code updates.'),
     );
   }
 
-  // Restore incoming profile's companion identity — reload fresh to get switchToProfile's write
+  // Restore incoming profile's companion identity: reload fresh to get switchToProfile's write
   if (!isDefault) {
     const freshConfig = loadPetConfigV2();
     const incoming = freshConfig?.profiles[selectedSalt];
@@ -201,7 +195,6 @@ export async function runBuddies(): Promise<void> {
     }
   }
 
-  // Show the new pet
   const useNodeHash = isNodeRuntime(binaryPath);
   const newBones = roll(userId, newSalt, { useNodeHash }).bones;
   showPet(newBones, 'Active pet');

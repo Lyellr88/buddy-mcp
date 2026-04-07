@@ -34,12 +34,10 @@ import './tools/export.js'; // side-effect: registers export_buddy_card + export
 import './tools/interact.js'; // side-effect: registers activate_buddy_interact + deactivate_buddy_interact
 import { STAT_TOOL_NAMES } from './tools/stats.js'; // side-effect: registers 20 stat tools
 
-// Returns the cached set of visible stat tool names — locked per roll, set by pickVisibleStatTools().
+// Returns the cached set of visible stat tool names: locked per roll, set by pickVisibleStatTools().
 function visibleStatTools(): Set<string> {
   return new Set(gachaState.visibleStatTools);
 }
-
-// --- Server handlers ---
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   const visible = visibleStatTools();
@@ -60,7 +58,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (activeProfile) {
       S.currentBuddy = { ...activeProfile };
     } else if (activeSalt) {
-      // Profile not found in dict, but salt is set — derive from roll() as fallback
+      // Profile not found in dict, but salt is set: derive from roll() as fallback
       const userId = getClaudeUserId();
       const rolled = roll(userId, activeSalt);
       const companionName = getCompanionName();
@@ -96,14 +94,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// --- CLI: apply pending patch or re-apply saved salt after update ---
 // Runs when invoked as: buddy-mcp apply or buddy-mcp apply --silent
 // Handles two cases:
 // 1. Pending patch waiting from reroll (reads ~/.buddy_mcp_pending.json)
 // 2. Hook-triggered re-apply after binary update (reads saved salt from pet config)
 
 function applyPendingPatch({ silent = false } = {}): void {
-  // First, try pending patch file (from reroll)
   if (existsSync(PENDING_PATCH_FILE)) {
     let pending: PendingPatch;
     try {
@@ -148,13 +144,11 @@ function applyPendingPatch({ silent = false } = {}): void {
         } catch (writeErr) {
           try {
             unlinkSync(tmp);
-          } catch {
-            /* ignore */
-          }
+          } catch {}
           throw writeErr;
         }
       } catch {
-        // Non-fatal — gacha state will self-heal on next server start
+        // Non-fatal: gacha state will self-heal on next server start
         gachaUpdateSucceeded = false;
       }
     }
@@ -168,19 +162,16 @@ function applyPendingPatch({ silent = false } = {}): void {
       console.log('Restart Claude Code to see your new companion.');
     }
 
-    // Install hook on successful apply (unless already installed)
     if (!isHookInstalled()) {
       try {
         installHook(process.argv[1]);
       } catch {
-        // Non-fatal — hook install failure shouldn't crash the apply
+        // Non-fatal: hook install failure shouldn't crash the apply
       }
     }
     return;
   }
 
-  // No pending file — try hook-triggered re-apply after update
-  // Load saved salt from pet config
   const petConfig = loadPetConfigV2();
   if (!petConfig?.salt) {
     if (!silent) console.log('No saved pet config. Run reroll_buddy in Claude first.');
@@ -195,7 +186,6 @@ function applyPendingPatch({ silent = false } = {}): void {
     process.exit(0);
   }
 
-  // Fast path: check if our salt is already applied
   const checkOurs = verifySalt(binaryPath, petConfig.salt);
   if (checkOurs.found >= 3) {
     if (!silent) console.log('✅ Pet already applied.');
@@ -207,22 +197,17 @@ function applyPendingPatch({ silent = false } = {}): void {
   if (checkOrig.found >= 3) {
     try {
       patchBinary(binaryPath, ORIGINAL_SALT, petConfig.salt);
-      // Restore companion identity from saved profile
       const activeSalt = petConfig.activeProfile;
       const profile = activeSalt ? petConfig.profiles[activeSalt] : undefined;
       if (profile?.name) {
         try {
           renameCompanion(profile.name);
-        } catch {
-          /* non-fatal */
-        }
+        } catch {}
       }
       if (profile?.personality) {
         try {
           setCompanionPersonality(profile.personality);
-        } catch {
-          /* non-fatal */
-        }
+        } catch {}
       }
       if (!silent) console.log('✅ Pet re-patched after update.');
       return;
@@ -243,16 +228,12 @@ function applyPendingPatch({ silent = false } = {}): void {
       if (profile?.name) {
         try {
           renameCompanion(profile.name);
-        } catch {
-          /* non-fatal */
-        }
+        } catch {}
       }
       if (profile?.personality) {
         try {
           setCompanionPersonality(profile.personality);
-        } catch {
-          /* non-fatal */
-        }
+        } catch {}
       }
       if (!silent) console.log('✅ Pet restored from backup and re-patched after update.');
       return;
@@ -262,7 +243,6 @@ function applyPendingPatch({ silent = false } = {}): void {
     }
   }
 
-  // Fallback: couldn't find a known salt or backup
   if (!silent) {
     console.error('⚠️  Could not find a known salt in binary or any valid backup.');
     console.error('Run buddy-mcp-build restore, or reinstall Claude Code.');
@@ -276,13 +256,9 @@ if (process.argv[2] === 'apply') {
   process.exit(0);
 }
 
-// --- Startup ---
-
 async function main() {
-  // 1. Load gacha extras (dex, shiny count, manifested tools)
   loadGachaState();
 
-  // 2. Load active buddy profile
   try {
     const petConfig = loadPetConfigV2();
     const activeSalt = petConfig?.activeProfile;
@@ -291,7 +267,7 @@ async function main() {
     if (activeProfile) {
       S.currentBuddy = { ...activeProfile };
     } else {
-      // No profile yet — derive buddy from current salt using roll()
+      // No profile yet: derive buddy from current salt using roll()
       const userId = getClaudeUserId();
       const salt = petConfig?.salt ?? ORIGINAL_SALT;
       const rolled = roll(userId, salt);
@@ -314,7 +290,6 @@ async function main() {
     console.error('Buddy load failed (non-fatal):', err);
   }
 
-  // 3. Check if binary changed since last patch (Claude auto-update detection)
   try {
     const binaryPath = findClaudeBinary();
     const currentMtime = statSync(binaryPath).mtimeMs;
@@ -324,19 +299,17 @@ async function main() {
       );
     }
   } catch {
-    // Binary not found — non-fatal, reroll will surface it
+    // Binary not found: non-fatal, reroll will surface it
   }
 
-  // 4. Dex sync — ensure current buddy is recorded
   if (S.currentBuddy && !gachaState.discoveredSpecies.includes(S.currentBuddy.species)) {
     gachaState.discoveredSpecies.push(S.currentBuddy.species);
     saveGachaState();
   }
 
-  // 5. Auto-manifest personality tools
   if (S.currentBuddy) autoManifestTools(S.currentBuddy);
 
-  // 6. Lock stat tools if not already set (first launch or old state file)
+  // Lock stat tools if not already set (first launch or missing state file)
   if (S.currentBuddy && gachaState.visibleStatTools.length === 0) {
     pickVisibleStatTools();
     saveGachaState();

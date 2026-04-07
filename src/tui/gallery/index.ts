@@ -64,7 +64,6 @@ export async function runGalleryTUI(
         resolve(result);
       }
 
-      // Root layout
       const rootBox = Box(
         {
           id: 'root',
@@ -102,17 +101,12 @@ export async function runGalleryTUI(
         return;
       }
 
-      // Buddy list (left) — uses native Select
       const profileList = createProfileListPanel(mainRow, entries, activeIndex);
-
-      // Preview (right)
       const preview = createGalleryPreviewPanel(mainRow);
 
-      // Initial render + start animation
       preview.update(entries[activeIndex]);
       unsubAnimation = animator.subscribe((frame) => preview.tick(frame));
 
-      // Update preview when Select selection changes
       profileList.select?.on(SelectRenderableEvents.SELECTION_CHANGED, handleSelectionChanged);
 
       const HELP_BROWSE = '  ↑↓ navigate   Enter apply   d delete   Esc exit';
@@ -129,7 +123,6 @@ export async function runGalleryTUI(
         return entries[selectedIndex].name;
       }
 
-      // Keyboard — handles Enter (confirm), d (delete), Escape, Ctrl+C
       const keyboard = setupGalleryKeyboard(
         r.keyInput,
         () => {
@@ -175,9 +168,7 @@ export async function runGalleryTUI(
     if (renderer) {
       try {
         renderer.destroy();
-      } catch {
-        // ignore cleanup errors
-      }
+      } catch {}
     }
     console.error(`  Gallery error: ${(err as Error).message}`);
     console.error(`  If this persists, please report at: ${ISSUE_URL}`);

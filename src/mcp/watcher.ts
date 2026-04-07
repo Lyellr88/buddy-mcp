@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Detached background watcher — spawned by reroll_buddy when the binary is locked (Windows EPERM).
+// Detached background watcher: spawned by reroll_buddy when the binary is locked (Windows EPERM).
 // Polls every 2 seconds until Claude Code closes, then auto-applies the pending patch and exits.
 
 import { readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'fs';
@@ -52,7 +52,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Capture the salt we were spawned for — if the file changes (newer reroll), we yield to the new watcher
+  // Capture the salt we were spawned for: if the file changes (newer reroll), we yield to the new watcher
   const ourSalt = pending.salt;
 
   const { rarity, species, shiny } = pending.profile;
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
   while (Date.now() - start < TIMEOUT_MS) {
     await sleep(POLL_MS);
 
-    // Re-read pending file each cycle — if a newer reroll overwrote it, yield to the newer watcher
+    // Re-read pending file each cycle: if a newer reroll overwrote it, yield to the newer watcher
     if (!existsSync(PENDING_PATCH_FILE)) {
       log('Pending patch file gone — another watcher likely applied it. Exiting.');
       return;
@@ -77,7 +77,7 @@ async function main(): Promise<void> {
       // Refresh pending in case other fields updated
       pending = current;
     } catch {
-      // File temporarily unreadable — keep waiting
+      // File temporarily unreadable: keep waiting
       continue;
     }
 
@@ -87,10 +87,10 @@ async function main(): Promise<void> {
       const msg = (err as Error).message ?? '';
 
       if (msg.includes('EPERM') || msg.includes('EBUSY') || msg.includes('locked')) {
-        continue; // Claude still running — keep waiting
+        continue; // Claude still running: keep waiting
       }
 
-      // Salt not found — binary updated and salt structure changed, try ORIGINAL_SALT fallback
+      // Salt not found: binary updated and salt structure changed, try ORIGINAL_SALT fallback
       if (msg.includes('Could not find salt')) {
         try {
           patchBinary(pending.binaryPath, ORIGINAL_SALT, pending.salt);
@@ -106,7 +106,7 @@ async function main(): Promise<void> {
           }
           return;
         }
-        // Fallback succeeded — update pending.currentSalt for the success path below
+        // Fallback succeeded: update pending.currentSalt for the success path below
         log('Re-patched using ORIGINAL_SALT after binary update.');
       } else {
         log(`Unexpected patch error: ${msg}`);
@@ -114,7 +114,6 @@ async function main(): Promise<void> {
       }
     }
 
-    // Patch succeeded
     saveProfile(pending.profile, { activate: true });
 
     let gachaUpdateSucceeded = true;
@@ -132,13 +131,11 @@ async function main(): Promise<void> {
         } catch (writeErr) {
           try {
             unlinkSync(tmp);
-          } catch {
-            /* ignore */
-          }
+          } catch {}
           throw writeErr;
         }
       } catch {
-        // Non-fatal — gacha state self-heals on next server start
+        // Non-fatal: gacha state self-heals on next server start
         gachaUpdateSucceeded = false;
       }
     }

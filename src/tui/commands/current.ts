@@ -19,7 +19,7 @@ export async function runCurrent(): Promise<void> {
     const bp = findClaudeBinary();
     useNodeHash = isNodeRuntime(bp);
   } catch {
-    /* ignore — binary not required for current */
+    /* binary not required for current */
   }
   if (useNodeHash) {
     console.log(chalk.dim('  Runtime: Node (FNV-1a hash)'));

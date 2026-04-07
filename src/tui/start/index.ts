@@ -197,9 +197,7 @@ export async function runStartTUI(buddyCount: number): Promise<StartAction | nul
     if (renderer) {
       try {
         renderer.destroy();
-      } catch {
-        /* ignore */
-      }
+      } catch {}
     }
     console.error(`  Start screen error: ${(err as Error).message}`);
     console.error(`  If this persists, please report at: ${ISSUE_URL}`);

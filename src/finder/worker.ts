@@ -48,7 +48,6 @@ function randomSalt(): string {
   return s;
 }
 
-// Filter out --fnv1a from args
 const args = process.argv.slice(2).filter((a) => a !== '--fnv1a');
 const [userId, wantSpecies, wantRarity, wantEye, wantHat, wantShiny, wantPeak, wantDump] = args;
 

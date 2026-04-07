@@ -13,7 +13,6 @@ export function runPreflight({ requireBinary = true } = {}): PreflightResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // 1. Check bun is installed (deferred — may not be needed for Node-based installs)
   let bunVersion: string | null = null;
   let bunMissing = false;
   try {
@@ -23,7 +22,6 @@ export function runPreflight({ requireBinary = true } = {}): PreflightResult {
     bunMissing = true;
   }
 
-  // 2. Check Claude config exists and has a userId
   const userId = getClaudeUserId();
   if (userId === 'anon') {
     warnings.push(
@@ -33,7 +31,6 @@ export function runPreflight({ requireBinary = true } = {}): PreflightResult {
     );
   }
 
-  // 3. Find and validate the binary
   let binaryPath: string | null = null;
   let saltCount = 0;
 
@@ -54,9 +51,7 @@ export function runPreflight({ requireBinary = true } = {}): PreflightResult {
               '  If patching fails, try setting CLAUDE_BINARY to the real compiled binary.',
           );
         }
-      } catch {
-        /* ignore */
-      }
+      } catch {}
 
       try {
         const origResult = verifySalt(binaryPath, ORIGINAL_SALT);
@@ -74,9 +69,8 @@ export function runPreflight({ requireBinary = true } = {}): PreflightResult {
                   '  Re-patching will replace it with your new selection.',
               );
             } else {
-              // Try to auto-restore from backup
               console.log(
-                chalk.yellow('  Salt mismatch detected — attempting to restore from backup...'),
+                chalk.yellow('  Salt mismatch detected, attempting to restore from backup...'),
               );
               try {
                 restoreBinary(binaryPath);
@@ -147,7 +141,6 @@ export function runPreflight({ requireBinary = true } = {}): PreflightResult {
     }
   }
 
-  // Bun requirement check
   const nodeRuntime = binaryPath ? isNodeRuntime(binaryPath) : false;
   if (bunMissing && !nodeRuntime) {
     errors.push(

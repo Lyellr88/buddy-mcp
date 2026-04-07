@@ -6,7 +6,6 @@ import { renderSprite } from '@/sprites/render.js';
 import { RARITY_HEX } from '@/tui/builder/colors.js';
 import { S, dynamicTools } from '../state.js';
 
-// SVG rendering constants
 const FONT_SIZE = 14;
 const CHAR_WIDTH = 8.43; // monospace character width at font-size 14
 const LINE_HEIGHT = 20;
@@ -42,27 +41,22 @@ function buildSvg(lines: string[], borderColor: string = '#FFFFFF'): string {
   const tspans = lines
     .map((line, i) => {
       const y = PAD_Y + (i + 1) * LINE_HEIGHT;
-      // Check if this is a border line (top/bottom box)
       const isBorderLine = line.startsWith('╭') || line.startsWith('╰');
       if (isBorderLine) {
         return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${escapeXml(line)}</tspan>`;
       }
-      // Check if this is the rarity/species line (has ★★)
       const isRarityLine = line.includes('★★');
       if (isRarityLine) {
         return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${escapeXml(line)}</tspan>`;
       }
-      // Check if this is a sprite line (has ASCII art characters from sprite data)
       const isSpriteContent = /[()[\]/\\_.~`|^=<>:;,@*+ω-]/.test(line);
       if (isSpriteContent && line.includes('│')) {
-        // For sprite lines with pipes, color both pipes and content with rarity color
         const parts = line.split('│');
         const colored = parts
           .map((part) => escapeXml(part))
           .join(`<tspan fill="${borderColor}">│</tspan>`);
         return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${colored}</tspan>`;
       }
-      // For lines with pipes, colorize them (card content lines)
       if (line.includes('│')) {
         const parts = line.split('│');
         const colored = parts
@@ -70,7 +64,6 @@ function buildSvg(lines: string[], borderColor: string = '#FFFFFF'): string {
           .join(`<tspan fill="${borderColor}">│</tspan>`);
         return `    <tspan x="${PAD_X}" y="${y}">${colored}</tspan>`;
       }
-      // For sprite lines (no box characters), color them with rarity color
       if (!line.includes('│') && !isBorderLine) {
         return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${escapeXml(line)}</tspan>`;
       }
@@ -147,7 +140,7 @@ const exportBuddyCardTool = {
     },
   },
   handler: async (args: Record<string, unknown>) => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.petBuddyStreak = 0;
     S.lastToolCalled = 'export_buddy_card';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     const b = S.currentBuddy;
@@ -180,7 +173,7 @@ const exportBuddySpriteTool = {
     },
   },
   handler: async (args: Record<string, unknown>) => {
-    S.petBuddyStreak = 0; // Reset pet streak on non-pet-buddy tool
+    S.petBuddyStreak = 0;
     S.lastToolCalled = 'export_buddy_sprite';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     const b = S.currentBuddy;
@@ -206,8 +199,6 @@ const exportBuddySpriteTool = {
     }
   },
 };
-
-// --- Register export tools ---
 
 dynamicTools.set('export_buddy_card', {
   ...exportBuddyCardTool,

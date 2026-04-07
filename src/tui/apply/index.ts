@@ -76,7 +76,6 @@ export async function runApplyTUI(
       let unsubAnimation: (() => void) | null = null;
       let currentStep: Step = flags.yes ? 'searching' : 'confirm_search';
 
-      // State accumulated across steps
       let saltResult: FinderResult | null = null;
       let foundBones: Bones | null = null;
       let profileName = '';
@@ -84,13 +83,11 @@ export async function runApplyTUI(
       const previewBones: Bones = { ...desired, stats: {} };
       const color = RARITY_HEX[desired.rarity];
 
-      // Widget tracking for cleanup
       let stepWidgetIds: string[] = [];
       let widgetCounter = 0;
       let activeInput: InputRenderableType | null = null;
       let activeSelect: SelectRenderableType | null = null;
 
-      // Search progress text refs
       let searchBarText: TextRenderableType | null = null;
       let searchDetailText: TextRenderableType | null = null;
 
@@ -110,7 +107,6 @@ export async function runApplyTUI(
         resolve();
       }
 
-      // --- Layout ---
       const rootBox = Box(
         {
           id: 'root',
@@ -154,7 +150,6 @@ export async function runApplyTUI(
       const stepArea = r.root.findDescendantById('step-area') as BoxRenderableType;
       const helpBar = r.root.findDescendantById('help-bar') as TextRenderableType;
 
-      // Render initial preview
       petTitle.content = `  ${desired.species} ${RARITY_STARS[desired.rarity]}`;
       petTitle.fg = color;
       petSprite.content = renderAnimatedSprite(previewBones, 0);
@@ -168,7 +163,6 @@ export async function runApplyTUI(
         petSprite.content = renderAnimatedSprite(bones, frame);
       });
 
-      // --- Widget helpers ---
       function nextId(prefix: string): string {
         return `${prefix}-${++widgetCounter}`;
       }
@@ -178,14 +172,10 @@ export async function runApplyTUI(
         // intercepting keypresses after removal
         try {
           activeInput?.blur();
-        } catch {
-          /* ignore */
-        }
+        } catch {}
         try {
           activeSelect?.blur();
-        } catch {
-          /* ignore */
-        }
+        } catch {}
         activeInput = null;
         activeSelect = null;
         searchBarText = null;
@@ -193,9 +183,7 @@ export async function runApplyTUI(
         for (const id of stepWidgetIds) {
           try {
             stepArea.remove(id);
-          } catch {
-            /* ignore */
-          }
+          } catch {}
         }
         stepWidgetIds = [];
       }
@@ -256,7 +244,6 @@ export async function runApplyTUI(
         return sel;
       }
 
-      // --- Step rendering ---
       function showStep(step: Step): void {
         currentStep = step;
         clearStep();
@@ -297,7 +284,7 @@ export async function runApplyTUI(
                 try {
                   renameCompanion(name);
                 } catch {
-                  /* ignore — companion may not be hatched yet */
+                  /* companion may not be hatched yet */
                 }
               }
               doSaveProfile();
@@ -345,9 +332,7 @@ export async function runApplyTUI(
                 if (personality) {
                   try {
                     setCompanionPersonality(personality);
-                  } catch {
-                    /* ignore */
-                  }
+                  } catch {}
                 }
                 nextAfterPersonality();
               },
@@ -427,7 +412,6 @@ export async function runApplyTUI(
         }
       }
 
-      // --- Side effects ---
       async function startSearch(): Promise<void> {
         try {
           saltResult = await findSalt(setup.userId, desired, {
@@ -456,7 +440,6 @@ export async function runApplyTUI(
             useNodeHash: setup.useNodeHash,
           }).bones;
 
-          // Update preview to show found pet
           const foundColor = RARITY_HEX[foundBones.rarity];
           petSprite.content = renderAnimatedSprite(foundBones, 0);
           petSprite.fg = foundColor;
@@ -562,15 +545,12 @@ export async function runApplyTUI(
           if (flags.personality) {
             try {
               setCompanionPersonality(flags.personality);
-            } catch {
-              /* ignore */
-            }
+            } catch {}
           }
           nextAfterPersonality();
         }
       }
 
-      // --- Keyboard handler ---
       // Input steps (name, personality_custom) are handled by InputRenderableEvents.ENTER
       // on the widget itself (set up in addInput callbacks). This handler covers
       // confirmations (Y/N), Select steps, and navigation-only steps.
@@ -587,7 +567,7 @@ export async function runApplyTUI(
             if (key.name === 'return' && saltResult) showStep('name');
             break;
 
-          // 'name' and 'personality_custom' — Enter handled by Input widget callbacks
+          // 'name' and 'personality_custom': Enter handled by Input widget callbacks
 
           case 'personality':
             if (key.name === 'return' && activeSelect) {
@@ -601,9 +581,7 @@ export async function runApplyTUI(
               } else if (choice === 'default' && speciesDefault) {
                 try {
                   setCompanionPersonality(speciesDefault);
-                } catch {
-                  /* ignore */
-                }
+                } catch {}
                 nextAfterPersonality();
               } else {
                 showStep('personality_custom');
@@ -636,9 +614,7 @@ export async function runApplyTUI(
     if (renderer) {
       try {
         renderer.destroy();
-      } catch {
-        /* ignore */
-      }
+      } catch {}
     }
     console.error(`  Apply TUI error: ${(err as Error).message}`);
     console.error(`  If this persists, please report at: ${ISSUE_URL}`);

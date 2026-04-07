@@ -42,7 +42,6 @@ export async function runStartScreen(flags: CliFlags = {}): Promise<void> {
   const profiles = getProfiles();
   const buddyCount = Object.keys(profiles).length;
 
-  // Try OpenTUI start screen, fall back to inquirer
   let action: StartAction | null = null;
   try {
     const { canUseBuilder } = await import('../builder/index.ts');
@@ -52,7 +51,7 @@ export async function runStartScreen(flags: CliFlags = {}): Promise<void> {
       if (action === null) return; // Esc / Ctrl+C
     }
   } catch {
-    // OpenTUI unavailable — fall through to inquirer
+    // OpenTUI unavailable, fall through to inquirer
   }
 
   if (action === null) {
@@ -60,7 +59,7 @@ export async function runStartScreen(flags: CliFlags = {}): Promise<void> {
     if (typeof globalThis.Bun === 'undefined') {
       console.log(
         chalk.yellow(
-          '  ⚠  Bun is not installed — using basic prompts.\n' +
+          '  ⚠  Bun is not installed, using basic prompts.\n' +
             '     Install Bun (https://bun.sh) for the full interactive TUI.\n',
         ),
       );
@@ -84,7 +83,6 @@ export async function runStartScreen(flags: CliFlags = {}): Promise<void> {
       return runInteractive(flags, { skipBanner: true });
 
     case 'presets': {
-      // Try OpenTUI presets browser, fall back to inquirer
       let preset: Preset | null = null;
       try {
         const { canUseBuilder } = await import('../builder/index.ts');
@@ -92,7 +90,7 @@ export async function runStartScreen(flags: CliFlags = {}): Promise<void> {
           const { runPresetsTUI } = await import('../presets/index.ts');
           preset = await runPresetsTUI();
           if (preset === null) {
-            // User pressed Esc — go back to start screen
+            // User pressed Esc, go back to start screen
             return runStartScreen(flags);
           }
         }
