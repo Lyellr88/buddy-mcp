@@ -39,7 +39,7 @@ Always run `npm run ci` before submitting changes.
 ```
 src/
   mcp/                        # MCP server (Claude Code connects here)
-    index.ts                  # Entry point — server init, tool registration, apply mode
+    index.ts                  # Entry point - server init, tool registration, apply mode
     state.ts                  # Shared mutable session state (S, gachaState, dynamicTools)
     persistence.ts            # Load/save gacha state, CORE_TOOL_NAMES, registerManifestedTool
     tools/
@@ -47,12 +47,12 @@ src/
       stats.ts                # 20 stat personality tools (4 per stat, 2 visible per buddy)
       interact.ts             # activate/deactivate_buddy_interact
       export.ts               # export_buddy_card, export_buddy_sprite (SVG)
-      relay.ts                # wrapBuddyDisplay() — BUDDY_RELAY_PROTOCOL injection
-      auto.ts                 # autoManifestTools() — legacy no-op, kept for compat
-    watcher.ts                # Background watcher — polls until Claude closes, auto-patches
+      relay.ts                # wrapBuddyDisplay() - BUDDY_RELAY_PROTOCOL injection
+      auto.ts                 # autoManifestTools() - legacy no-op, kept for compat
+    watcher.ts                # Background watcher - polls until Claude closes, auto-patches
   tui/                        # TUI builder (buddy-mcp-build CLI, Bun-optional)
-    index.ts                  # TUI root — wires subcommands and start screen
-    launcher.ts               # Entry point — detects Bun, falls back to sequential prompts
+    index.ts                  # TUI root - wires subcommands and start screen
+    launcher.ts               # Entry point - detects Bun, falls back to sequential prompts
     cli.ts                    # Subcommand dispatch
     animator.ts               # Sprite animation utilities
     display.ts                # Pet rendering + warnings
@@ -150,8 +150,8 @@ bun dist/tui/launcher.js      # Force full animated TUI (requires Bun)
 
 buddy-mcp runs as two separate binaries:
 
-- **`buddy-mcp`** — MCP server over stdio. Claude Code spawns it on session start. Handles all tool calls, state management, and binary patching.
-- **`buddy-mcp-build`** — Interactive TUI builder. User-facing CLI for custom buddy builds, preset browsing, and binary restore. Shares state with the MCP server via `~/.buddy-mcp.json` — zero IPC.
+- **`buddy-mcp`** - MCP server over stdio. Claude Code spawns it on session start. Handles all tool calls, state management, and binary patching.
+- **`buddy-mcp-build`** - Interactive TUI builder. User-facing CLI for custom buddy builds, preset browsing, and binary restore. Shares state with the MCP server via `~/.buddy-mcp.json` - zero IPC.
 
 The MCP server communicates over stdin/stdout using `@modelcontextprotocol/sdk`. Tool results are wrapped in `<BUDDY_DISPLAY>` tags via `relay.ts` so Claude relays them verbatim to the user.
 
@@ -179,21 +179,21 @@ npm run test:tools        # Manual integration tests (requires build + buddy sta
 
 The Vitest suite covers:
 
-- **mcp/tools/** — Tool handler behavior, no-buddy guards, stat pool selection, relay wrapping
-- **mcp/** — Persistence round-trips, CORE_TOOL_NAMES protection, gacha state load/save
-- **patcher/** — Binary patch correctness, salt detection, backup chain, poison prevention
-- **generation/** — Hash determinism, RNG, trait rolling, seed-to-profile
-- **sprites/** — ASCII rendering, eye substitution, hat placement, animation frames
-- **config/** — Config round-trips, hook install/remove
-- **tui/** — Formatting, builder state, color validation, stat bars, gallery, prompts
+- **mcp/tools/** - Tool handler behavior, no-buddy guards, stat pool selection, relay wrapping
+- **mcp/** - Persistence round-trips, CORE_TOOL_NAMES protection, gacha state load/save
+- **patcher/** - Binary patch correctness, salt detection, backup chain, poison prevention
+- **generation/** - Hash determinism, RNG, trait rolling, seed-to-profile
+- **sprites/** - ASCII rendering, eye substitution, hat placement, animation frames
+- **config/** - Config round-trips, hook install/remove
+- **tui/** - Formatting, builder state, color validation, stat bars, gallery, prompts
 
-The `tests/tools/` integration tests import handlers directly from the compiled output — they require a valid `npm run build` and a buddy state in `~/.buddy-mcp.json`. They are excluded from CI.
+The `tests/tools/` integration tests import handlers directly from the compiled output - they require a valid `npm run build` and a buddy state in `~/.buddy-mcp.json`. They are excluded from CI.
 
 ## CI/CD
 
 GitHub Actions runs on every push and PR:
 
-- **Quality gate** (`ci.yml`): lint, format check, typecheck, build, test across Node 20/22 on Ubuntu, macOS, and Windows — with Bun installed for worker compatibility
+- **Quality gate** (`ci.yml`): lint, format check, typecheck, build, test across Node 20/22 on Ubuntu, macOS, and Windows - with Bun installed for worker compatibility
 - **Release** (`release.yml`): creating a GitHub release auto-publishes to npm as `buddy-mcp`
 
 ## Submitting Changes
@@ -201,7 +201,7 @@ GitHub Actions runs on every push and PR:
 1. Fork the repo
 2. Create a branch (`git checkout -b my-feature`)
 3. Make your changes
-4. Run `npm run ci` — all checks must pass
+4. Run `npm run ci` - all checks must pass
 5. Commit and push
 6. Open a PR
 
