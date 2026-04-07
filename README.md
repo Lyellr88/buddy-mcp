@@ -1,5 +1,3 @@
-# buddy-mcp 
-
 ![buddy-mcp hero](assets/hero.svg)
 
 [![npm version](https://img.shields.io/npm/v/@lyellr88/buddy-mcp)](https://www.npmjs.com/package/@lyellr88/buddy-mcp)
