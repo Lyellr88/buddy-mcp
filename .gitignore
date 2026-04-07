@@ -15,7 +15,7 @@ buddy-flumox-card.svg
 buddy-flumox-sprite.svg
 agents/
 any-buddy-main/
-*.svg
+/*.svg
 
 # Docs (internal planning/dev notes)
 docs/

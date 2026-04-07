@@ -24,7 +24,7 @@ A break from long code sessions. Stuck on a bug? Reroll a buddy, talk with them,
 Build your perfect buddy with full control.
 
 <video width="100%" controls>
-  <source src="assets/buddy_cli_builder.mp4" type="video/mp4">
+  <source src="https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_cli_builder.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 </details>
@@ -37,7 +37,7 @@ Build your perfect buddy with full control.
 Roll, close Claude, reopen—new buddy live.
 
 <video width="100%" controls>
-  <source src="assets/buddy_reroll_action.mp4" type="video/mp4">
+  <source src="https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_reroll_action.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 </details>
@@ -50,7 +50,7 @@ Roll, close Claude, reopen—new buddy live.
 Talk, pet, and explore your buddy's dex.
 
 <video width="100%" controls>
-  <source src="assets/buddy_tools_action.mp4" type="video/mp4">
+  <source src="https://github.com/Lyellr88/buddy-mcp/raw/main/assets/buddy_tools_action.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 </details>
