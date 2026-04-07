@@ -47,6 +47,7 @@ Talk, pet, and explore your buddy's dex.
 </tr>
 </table>
 
+
 ---
 
 ## How It Works
