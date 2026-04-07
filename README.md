@@ -23,10 +23,8 @@ A break from long code sessions. Stuck on a bug? Reroll a buddy, talk with them,
 <summary><strong>Interactive Builder</strong></summary>
 Build your perfect buddy with full control.
 
-<video width="100%" controls>
-  <source src="https://github.com/user-attachments/assets/840de2d0-617b-40fd-b653-c091af9abbfc" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<https://github.com/user-attachments/assets/840de2d0-617b-40fd-b653-c091af9abbfc>
+
 </details>
 
 </td>
@@ -36,10 +34,8 @@ Build your perfect buddy with full control.
 <summary><strong>Reroll in Action</strong></summary>
 Roll, close Claude, reopen—new buddy live.
 
-<video width="100%" controls>
-  <source src="https://github.com/user-attachments/assets/83adc99e-2c49-4255-bf48-eca41d10580b" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<https://github.com/user-attachments/assets/83adc99e-2c49-4255-bf48-eca41d10580b>
+
 </details>
 
 </td>
@@ -49,10 +45,8 @@ Roll, close Claude, reopen—new buddy live.
 <summary><strong>Interact with Tools</strong></summary>
 Talk, pet, and explore your buddy's dex.
 
-<video width="100%" controls>
-  <source src="https://github.com/user-attachments/assets/485c608f-55ed-40ed-a592-936814ea9601" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<https://github.com/user-attachments/assets/485c608f-55ed-40ed-a592-936814ea9601>
+
 </details>
 
 </td>
