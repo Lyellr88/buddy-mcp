@@ -125,8 +125,6 @@
 - Updated: `tests/mcp/auto.test.ts` — rewrote to document no-op behavior
 - Updated: `tests/mcp/persistence.test.ts` — CORE_TOOL_NAMES count 11 → 29, full expected array with all stat tool names
 
----
-
 ## v0.15.0 — Stat Locking, Salt Detection & Polish
 
 ### Stat Tool Visibility — Locked Per Roll
@@ -157,8 +155,6 @@
 
 ### Reroll Message Cleanup
 - Removed 💡 Stat tools may have changed — open /mcp hint from both reroll success messages (stat tools now locked per roll, hint was obsolete)
-
----
 
 ## v0.16.0 — TUI Builder + Smart Backup Chain
 
@@ -196,8 +192,6 @@
   - `restoreBinary` falls back to `.anybuddy-bak` when primary is poisoned
   - `restoreBinary` throws when no valid backup exists
 
----
-
 ## v1.1.0 — Public Release + SessionStart Hook Auto-Repair
 
 ### SessionStart Hook — Binary Update Resilience
@@ -221,8 +215,6 @@
 
 ### Tests
 - 343 → 343 tests passing (no new tests; hook logic covered by v0.16.0 suite)
-
---
 
 ## v1.1.1 — CI/CD + ESLint Polish
 
@@ -351,6 +343,3 @@
 ### Docs
 - Added `CONTRIBUTING.md` — full contribution guide: setup, project structure, path aliases, adding new tools, testing, CI/CD, runtime architecture, MIT attribution
 - Added badges to `README.md`: npm version, CI status, MIT license, Node ≥20
-
----
-
