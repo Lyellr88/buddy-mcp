@@ -1,4 +1,4 @@
-# buddy-mcp — Technical Reference
+# buddy-mcp - Technical Reference
 
 > For the quick start, tool list, and gacha system see [README.md](README.md).
 
@@ -86,17 +86,17 @@ Your buddy profiles and active session pointer.
 | `profiles[salt].createdAt` | ISO timestamp of when this buddy was rolled |
 
 ### `~/.buddy_mcp_gacha.json`
-Persistent gacha engine state — BuddyDex, tokens, tool locks, and binary tracking.
+Persistent gacha engine state. BuddyDex, tokens, tool locks, and binary tracking.
 
 | Field | Description |
 |-------|-------------|
-| `discoveredSpecies` | All species ever rolled — your BuddyDex |
+| `discoveredSpecies` | All species ever rolled, your BuddyDex |
 | `shinyCount` | Total shiny buddies ever rolled |
 | `visibleStatTools` | Locked stat tool names for current buddy (set once at reroll, stable until next roll) |
 | `interactMode` | Whether buddy companion mode is active (default: `true`) |
-| `sessionAffectionTokens` | Earned tokens from petting — each token guarantees rare+ on next reroll |
+| `sessionAffectionTokens` | Earned tokens from petting, each token guarantees rare+ on next reroll |
 | `sessionAffectionAccumulator` | Current petting progress toward next token (0–100) |
-| `binaryMtime` | Last known mtime of Claude binary — used to detect Claude updates |
+| `binaryMtime` | Last known mtime of Claude binary, used to detect Claude updates |
 | `manifestedTools` | User-created dynamic tool definitions (persisted across sessions) |
 
 ### `~/.buddy_mcp_pending.json`
@@ -120,8 +120,8 @@ buddy-mcp runs as a persistent MCP server with 29 registered tools internally. H
 
 The `ListTools` handler filters what Claude actually sees. Of the 29 registered tools:
 
-- **20 stat personality tools** — only **2 are exposed per session**, 1 from each of the buddy's top 2 stats. The other 18 are registered internally but never sent to the model.
-- **`activate_buddy_interact`** — always hidden from `ListTools`. It's wired but invisible.
+- **20 stat personality tools** only **2 are exposed per session**, 1 from each of the buddy's top 2 stats. The other 18 are registered internally but never sent to the model.
+- **`activate_buddy_interact`** always hidden from `ListTools`. It's wired but invisible.
 - **Result: Claude sees ~9 tools max**, regardless of how many are registered.
 
 This means the schema tax (Claude reading tool definitions on every session start) scales with visible tools, not total tools. 9 schemas, not 29.
@@ -132,7 +132,7 @@ The `BUDDY_RELAY_PROTOCOL` standing instruction is injected once per session on 
 
 ### Tool Schemas (kept flat)
 
-All tool schemas are intentionally simple — mostly single optional string arguments or no arguments at all. No nested objects, no enum arrays, no complex validation. Smaller schemas = less context consumed per tool definition.
+All tool schemas are intentionally simple, mostly single optional string arguments or no arguments at all. No nested objects, no enum arrays, no complex validation. Smaller schemas = less context consumed per tool definition.
 
 ### Inline Output (no extra round-trips)
 
@@ -144,7 +144,7 @@ All tool schemas are intentionally simple — mostly single optional string argu
 |--------|-----------|-----------|
 | Tools visible to Claude | 29 | ~9 |
 | Schema injections per session | 29 | ~9 |
-| Relay protocol injections | — | 1 per session |
+| Relay protocol injections | - | 1 per session |
 | Tool output round-trips | varies | 1 per call |
 
 ---
@@ -159,4 +159,4 @@ npm run apply
 
 Then restart Claude Code.
 
-(This fallback is automatic in 99% of cases — only needed if your system kept Claude open for an unusually long time.)
+(This fallback is automatic in 99% of cases, only needed if your system kept Claude open for an unusually long time.)
