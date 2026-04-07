@@ -117,6 +117,7 @@ async function main(): Promise<void> {
     // Patch succeeded
     saveProfile(pending.profile, { activate: true });
 
+    let gachaUpdateSucceeded = true;
     if (existsSync(GACHA_STATE_FILE)) {
       try {
         const raw = JSON.parse(readFileSync(GACHA_STATE_FILE, 'utf-8')) as GachaState;
@@ -138,13 +139,19 @@ async function main(): Promise<void> {
         }
       } catch {
         // Non-fatal — gacha state self-heals on next server start
+        gachaUpdateSucceeded = false;
       }
     }
 
-    unlinkSync(PENDING_PATCH_FILE);
-    log(
-      `✅ ${rarity} ${species}${shinyTag} patched! Reopen Claude Code to see your new companion.`,
-    );
+    // Only delete pending patch file if both the binary patch and gacha state update succeeded
+    if (gachaUpdateSucceeded) {
+      unlinkSync(PENDING_PATCH_FILE);
+      log(
+        `✅ ${rarity} ${species}${shinyTag} patched! Reopen Claude Code to see your new companion.`,
+      );
+    } else {
+      log(`⚠️  Patch applied but gacha state update failed. Pending patch preserved for retry.`);
+    }
     return;
   }
 

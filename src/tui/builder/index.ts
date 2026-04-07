@@ -83,7 +83,7 @@ export async function runBuilder(
       }
 
       // Root layout: column with main content row + pinned help bar
-      const title = browseOnly ? ' buddy-mcp preview ' : ' buddy-mcp ';
+      const title = browseOnly ? ' buddy-cli preview ' : ' buddy-cli ';
       const rootBox = Box(
         {
           id: 'root',

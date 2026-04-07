@@ -5,7 +5,7 @@ import { renderSprite } from '@/sprites/index.js';
 import { RARITY_CHALK } from './format.ts';
 
 export function banner(): void {
-  console.log(chalk.bold('\n  buddy-mcp'));
+  console.log(chalk.bold('\n  buddy-cli'));
   console.log(chalk.dim('  Build your Claude Code companion\n'));
 }
 

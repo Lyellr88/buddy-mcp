@@ -396,9 +396,7 @@ async function applyDesiredTraitsSequential(
   configV2.previousSalt = oldSalt;
   configV2.appliedTo = binaryPath;
   configV2.appliedAt = new Date().toISOString();
-  if (profileName) {
-    configV2.activeProfile = result.salt;
-  }
+  configV2.activeProfile = result.salt;
   savePetConfigV2(configV2);
 
   // Auto-install hook so the buddy survives Claude Code auto-updates
@@ -509,6 +507,6 @@ async function applyDesiredTraitsSequential(
     );
   }
   console.log(
-    chalk.dim('\n  If you enjoyed this, star the repo: https://github.com/lyellr88/buddy-mcpp\n'),
+    chalk.dim('\n  If you enjoyed this, star the repo: https://github.com/lyellr88/buddy-mcp\n'),
   );
 }

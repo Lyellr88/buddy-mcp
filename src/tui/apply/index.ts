@@ -120,7 +120,7 @@ export async function runApplyTUI(
           borderStyle: 'rounded',
           border: true,
           borderColor: BORDER_COLOR,
-          title: ' buddy-mcp ',
+          title: ' buddy-cli ',
           titleAlignment: 'center',
           padding: 0,
           paddingLeft: 2,
@@ -294,13 +294,13 @@ export async function runApplyTUI(
               const name = (activeInput?.value ?? '').trim();
               if (name) {
                 profileName = name;
-                doSaveProfile();
                 try {
                   renameCompanion(name);
                 } catch {
                   /* ignore — companion may not be hatched yet */
                 }
               }
+              doSaveProfile();
               nextAfterName();
             });
             helpBar.content = '  Type a name, then Enter    Enter to skip';
@@ -407,7 +407,7 @@ export async function runApplyTUI(
             }
             addSpacer();
             {
-              const repoUrl = 'https://github.com/lyellr88/buddy-mcpp';
+              const repoUrl = 'https://github.com/lyellr88/buddy-mcp';
               const id = nextId('t');
               stepWidgetIds.push(id);
               const styledContent = new StyledText([
@@ -484,7 +484,7 @@ export async function runApplyTUI(
       }
 
       function doSaveProfile(): void {
-        if (!profileName || !saltResult || !foundBones) return;
+        if (!saltResult || !foundBones) return;
         saveProfile({
           salt: saltResult.salt,
           species: desired.species,
@@ -493,7 +493,7 @@ export async function runApplyTUI(
           hat: desired.hat,
           shiny: desired.shiny,
           stats: foundBones.stats,
-          name: profileName,
+          name: profileName || desired.species,
           personality: null,
           createdAt: new Date().toISOString(),
         });
@@ -526,7 +526,7 @@ export async function runApplyTUI(
         configV2.previousSalt = oldSalt;
         configV2.appliedTo = setup.binaryPath;
         configV2.appliedAt = new Date().toISOString();
-        if (profileName) configV2.activeProfile = saltResult.salt;
+        configV2.activeProfile = saltResult.salt;
         savePetConfigV2(configV2);
       }
 

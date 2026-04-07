@@ -125,8 +125,6 @@
 - Updated: `tests/mcp/auto.test.ts` — rewrote to document no-op behavior
 - Updated: `tests/mcp/persistence.test.ts` — CORE_TOOL_NAMES count 11 → 29, full expected array with all stat tool names
 
----
-
 ## v0.15.0 — Stat Locking, Salt Detection & Polish
 
 ### Stat Tool Visibility — Locked Per Roll
@@ -157,8 +155,6 @@
 
 ### Reroll Message Cleanup
 - Removed 💡 Stat tools may have changed — open /mcp hint from both reroll success messages (stat tools now locked per roll, hint was obsolete)
-
----
 
 ## v0.16.0 — TUI Builder + Smart Backup Chain
 
@@ -196,8 +192,6 @@
   - `restoreBinary` falls back to `.anybuddy-bak` when primary is poisoned
   - `restoreBinary` throws when no valid backup exists
 
----
-
 ## v1.1.0 — Public Release + SessionStart Hook Auto-Repair
 
 ### SessionStart Hook — Binary Update Resilience
@@ -221,8 +215,6 @@
 
 ### Tests
 - 343 → 343 tests passing (no new tests; hook logic covered by v0.16.0 suite)
-
---
 
 ## v1.1.1 — CI/CD + ESLint Polish
 
@@ -352,5 +344,42 @@
 - Added `CONTRIBUTING.md` — full contribution guide: setup, project structure, path aliases, adding new tools, testing, CI/CD, runtime architecture, MIT attribution
 - Added badges to `README.md`: npm version, CI status, MIT license, Node ≥20
 
----
+## v1.4.1 — Patch Persistence + CLI Branding + Documentation
 
+### Patch Persistence Hardening
+- **Pending patch file atomic writes**: `core.ts` now writes pending patch to `.tmp` then `renameSync` to `~/.buddy_mcp_pending.json` — prevents corruption if Claude crashes mid-write
+- **Watcher gacha update guard**: `watcher.ts` now tracks `gachaUpdateSucceeded` and only deletes pending patch if both binary patch AND gacha state update succeed — prevents pending patch loss on partial failures
+
+### Reroll Message Cleanup
+- Removed salt-matching attempt counts from reroll success messages — "after 3,621 attempts" was confusing and referred to internal worker salt-finding, not actual rolls
+- Messages now simply show rarity + species without internal implementation details
+
+### CLI Branding
+- Updated TUI start screen logo from "any_buddy" to "buddy_cli" — reflects that this is the CLI builder tool, not an MCP server
+- Logo now displays "buddy_cli" in ASCII art with proper spacing
+
+### Documentation Improvements
+- Added **4b. Natural Language Activation** section to README Quick Start showing NLP examples ("reroll buddy", "talk to my buddy", "pet buddy", etc.)
+- Combined **Manual Apply** and **Troubleshooting** sections into unified Troubleshooting area
+- Clarified binary lock issue: "Close all Claude Code instances completely" with Task Manager reference for Windows users
+
+### Planning
+- Created spec for `buddy_think` consolidation tool (`docs/current/buddy_think_consolidation.md`) — will merge 20 stat tools into single NLP-friendly interface in v1.5.0
+
+## v1.4.2 — SVG Export Polish + CLI-to-MCP Profile Sync
+
+### SVG Export Fixes
+- Fixed XML character escaping in sprite lines — special characters (`<`, `>`, `&`, quotes) now properly escaped before coloring
+- Expanded sprite character detection regex to include all ASCII art punctuation: `()[]\/_.~`|^=<>:;,@*+ω-` — backticks, tildes, hyphens, and carets now properly colored with rarity color
+- Fixed stat value alignment for 3-digit stats (e.g., CHAOS 100) — changed `padStart(2)` to `padStart(3)` across all stat bars
+- Species name alignment improved — adjusted spacing between rarity and species to properly center within 40-char box
+- Result: all export SVGs now display with uniform rarity coloring throughout sprites, proper border alignment on all lines, and correct padding for any stat value
+
+### CLI-to-MCP Profile Synchronization
+- Fixed `src/tui/apply/index.ts` `doSaveProfile()` guard — was only called inside the "if (name)" conditional, preventing profile save when user skipped name prompt
+- Profile now always saves to the buddy dict regardless of name entry path — ensures new buddies created in CLI builder immediately appear in MCP server
+- Added per-request `S.currentBuddy` refresh from disk in `src/mcp/index.ts` to catch newly-created buddies
+- Added fallback to `roll()` when `activeProfile` points to missing profile in dict
+
+### Tests
+- All 359 tests passing

@@ -1,5 +1,7 @@
 # buddy-mcp 
 
+![buddy-mcp hero](assets/hero.svg)
+
 [![npm version](https://img.shields.io/npm/v/@lyellr88/buddy-mcp)](https://www.npmjs.com/package/@lyellr88/buddy-mcp)
 [![CI](https://github.com/Lyellr88/buddy-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Lyellr88/buddy-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -8,6 +10,54 @@
 A break from long code sessions. Stuck on a bug? Reroll a buddy, talk with them, or pet them to build affection and improve your odds at higher-tier buddies on the next roll. If enough people want it, I'll build out Battle-Buddies where you can pit your buddy against others and unlock exclusive species that sync back into your local pool.
 
 > A gacha companion system for Claude Code. Roll for a rare buddy, patch it directly into the binary, collect 'em all. Buddy-mcp is an MCP server that replaces Claude Code's built-in companion with one you actually rolled for. Reroll, get lucky, close Claude, reopen. Your new buddy is waiting. Legendary drop rates apply.
+
+---
+
+## Quick Demo
+
+<table>
+<tr>
+<td width="33%">
+
+<details>
+<summary><strong>Interactive Builder</strong></summary>
+Build your perfect buddy with full control.
+
+<video width="100%" controls>
+  <source src="assets/buddy_cli_builder.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</details>
+
+</td>
+<td width="33%">
+
+<details>
+<summary><strong>Reroll in Action</strong></summary>
+Roll, close Claude, reopen—new buddy live.
+
+<video width="100%" controls>
+  <source src="assets/buddy_reroll_action.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</details>
+
+</td>
+<td width="33%">
+
+<details>
+<summary><strong>Interact with Tools</strong></summary>
+Talk, pet, and explore your buddy's dex.
+
+<video width="100%" controls>
+  <source src="assets/buddy_tools_action.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</details>
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -37,6 +87,36 @@ buddy-mcp isn’t just a UI mod. It’s a deterministic companion system layered
 Lightweight by design with minimal token usage and data footprint. Most features operate inline through message augmentation rather than separate invocation flows.
 
 Built to be fast, local-first, and resilient to change.
+
+## Patch Flow
+
+buddy-mcp patches the Claude binary directly. Here's what happens when you hit `reroll_buddy`:
+
+```
+reroll_buddy
+    │
+    ├─ Roll random traits (species, rarity, eye, hat, shiny chance)
+    │
+    ├─ Multi-worker salt search (up to 8 parallel Bun workers)
+    │   └─ Each worker brute-forces salts using wyhash until traits match
+    │
+    ├─ Try to patch binary immediately
+    │   ├─ Success → "Close Claude and reopen"
+    │   └─ EPERM (Claude is running) → Save pending patch + start background watcher
+    │       └─ Watcher polls every 2s, applies patch the moment Claude closes
+    │
+    └─ Profile saved: species, rarity, stats, name, personality
+
+On next session start (hook fires):
+    │
+    ├─ Salt still valid → no-op (fast path)
+    │
+    ├─ Pending patch found → apply it
+    │
+    └─ Salt mismatch (Claude auto-updated)
+        ├─ Try .buddy-mcp-bak (only if it contains original salt)
+        ├─ Try .anybuddy-bak (fallback for prior patcher users)
+        └─ Restore + re-patch automatically, no reinstall required
 
 ---
 
@@ -93,9 +173,24 @@ Claude will auto-detect the installed binary and connect it.
 
 ### 4. Verify
 
-Open Claude Code and ask: **"show me my buddy card"**
+Open Claude Code. Your buddy is live—use Claude Code's native `/buddy` command to see your card, or ask Claude: **"show me my buddy"**
 
-You should see a card with your current companion's species, rarity, and stats. You're in.
+You should see your companion's species, rarity, stats, and personality. You're in.
+
+### 4b. Natural Language Activation
+
+All buddy tools work through natural language. Claude's NLP detects intent automatically:
+
+| Natural Language | Activates |
+|------------------|-----------|
+| "reroll buddy" / "let's roll again" | `reroll_buddy` |
+| "talk to my buddy" / "what does buddy think" | `buddy_talk` |
+| "pet buddy" / "pet them" | `pet_buddy` |
+| "my buddy dex" / "show me my collection" | `view_buddy_dex` |
+| "export buddy card" / "save my buddy" | `export_buddy_card` |
+| "export sprite" / "save the sprite" | `export_buddy_sprite` |
+
+No tool names required — just chat naturally.
 
 ### 5. Launch the TUI Builder (optional)
 
@@ -141,60 +236,9 @@ Each buddy has 5 stats: **Debugging, Patience, Chaos, Wisdom, Snark**. A peak st
 
 **20 baked-in tools.** Only **2 are visible** at a time: 1 randomly picked from each of your buddy's **top 2 stats by raw value**. The other 18 stay hidden. The visible pair is **locked per roll**. It doesn't change until you reroll. Every buddy shows a different pair.
 
-| Tool | Stat | What it does |
-|------|------|-------------|
-| `deep_trace` | Debugging | Focused bug hunting. Abrupt, clinical, slightly haunted. |
-| `trace_nightmare` | Debugging | When the trace stops making sense. Surreal debugging perspective |
-| `null_hunt` | Debugging | Hunt for null refs. Clinical. Relentless |
-| `stack_dive` | Debugging | Dive into the callstack. The bug is always deeper than you think |
-| `patience_check` | Patience | Check if your buddy is still willing to help |
-| `wait_wisdom` | Patience | Slow down. Receive patience-encoded insight |
-| `vibe_check` | Patience | The mystery action. Your buddy reads the vibe. 5% cosmic event |
-| `still_point` | Patience | Stop. Be still. Let the answer come to you |
-| `chaos_audit` | Chaos | Unpredictable. Might help. Might not. Science |
-| `chaos_roulette` | Chaos | Spin the chaos wheel. Receive a wildly lateral suggestion |
-| `chaos_spark` | Chaos | Ignite a lateral idea. May or may not be relevant |
-| `entropy_roll` | Chaos | Roll against entropy. The universe responds |
-| `zen_consult` | Wisdom | Philosophical insight into your architecture |
-| `zen_mirror` | Wisdom | Turn the question inward. A reflection, not an answer |
-| `oracle_seek` | Wisdom | Seek the oracle. The answer is already inside you |
-| `deep_thought` | Wisdom | Think slower. The answer requires depth |
-| `snark_roast` | Snark | Light sarcastic critique of your current work |
-| `snark_savage` | Snark | No mercy. Full roast. For when you need the unfiltered truth |
-| `side_eye` | Snark | Your buddy looks at your code. Then at you. Then back at the code |
-| `snark_verdict` | Snark | Final ruling from the bench. The buddy has reviewed and judged |
-
 ---
 
-## Patch Flow
 
-buddy-mcp patches the Claude binary directly. Here's what happens when you hit `reroll_buddy`:
-
-```
-reroll_buddy
-    │
-    ├─ Roll random traits (species, rarity, eye, hat, shiny chance)
-    │
-    ├─ Multi-worker salt search (up to 8 parallel Bun workers)
-    │   └─ Each worker brute-forces salts using wyhash until traits match
-    │
-    ├─ Try to patch binary immediately
-    │   ├─ Success → "Close Claude and reopen"
-    │   └─ EPERM (Claude is running) → Save pending patch + start background watcher
-    │       └─ Watcher polls every 2s, applies patch the moment Claude closes
-    │
-    └─ Profile saved: species, rarity, stats, name, personality
-
-On next session start (hook fires):
-    │
-    ├─ Salt still valid → no-op (fast path)
-    │
-    ├─ Pending patch found → apply it
-    │
-    └─ Salt mismatch (Claude auto-updated)
-        ├─ Try .buddy-mcp-bak (only if it contains original salt)
-        ├─ Try .anybuddy-bak (fallback for prior patcher users)
-        └─ Restore + re-patch automatically, no reinstall required
 ```
 
 
@@ -212,7 +256,22 @@ buddy-mcp stores everything in your home directory:
 
 ---
 
-## Manual Apply (Fallback)
+## Troubleshooting
+
+### Buddy doesn't change after reroll
+
+If you rerolled but your buddy didn't update on restart:
+
+1. **Close all Claude Code instances completely** (check Task Manager on Windows)
+   - Even minimized or backgrounded windows count — they keep the binary locked
+   - Wait a few seconds for processes to fully exit
+2. **Reopen Claude Code**
+   - The pending patch will apply automatically via the hook
+   - Or manually run `npm run apply` then reopen
+
+The binary stays locked as long as any Claude instance is running, preventing the patch from being applied.
+
+### Manual Apply (Fallback)
 
 If the background watcher didn't fire for some reason, you can apply a pending patch manually:
 

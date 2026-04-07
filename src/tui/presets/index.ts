@@ -110,7 +110,7 @@ export async function runPresetsTUI(): Promise<Preset | null> {
           borderStyle: 'rounded',
           border: true,
           borderColor: BORDER_COLOR,
-          title: ' buddy-mcp presets ',
+          title: ' buddy-cli presets ',
           titleAlignment: 'center',
           padding: 0,
         },

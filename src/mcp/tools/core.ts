@@ -1,4 +1,4 @@
-﻿import { writeFileSync, existsSync, statSync } from 'fs';
+﻿import { writeFileSync, existsSync, statSync, renameSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
@@ -282,9 +282,6 @@ const rerollBuddyTool = {
       createdAt: new Date().toISOString(),
     };
 
-    const elapsed = (finderResult.elapsed / 1000).toFixed(1);
-    const attempts =
-      finderResult.totalAttempts?.toLocaleString() ?? finderResult.attempts.toLocaleString();
     const shinyTag = profile.shiny ? ' ✨ SHINY! ✨' : '';
 
     if (!patched) {
@@ -297,7 +294,18 @@ const rerollBuddyTool = {
         rolledAt: new Date().toISOString(),
       };
       try {
-        writeFileSync(PENDING_PATCH_FILE, JSON.stringify(pending, null, 2));
+        const tmp = PENDING_PATCH_FILE + '.tmp';
+        try {
+          writeFileSync(tmp, JSON.stringify(pending, null, 2));
+          renameSync(tmp, PENDING_PATCH_FILE);
+        } catch (writeErr) {
+          try {
+            unlinkSync(tmp);
+          } catch {
+            /* ignore */
+          }
+          throw writeErr;
+        }
         gachaState.sessionAffectionAccumulator = 0;
         // Lock stat tools for new buddy now — stable until next reroll
         S.currentBuddy = { ...profile };
@@ -332,7 +340,7 @@ const rerollBuddyTool = {
           ];
 
       return [
-        `🎲 Found a **${profile.rarity} ${profile.species}**${shinyTag} after ~${attempts} attempts in ${elapsed}s!`,
+        `🎲 You got a **${profile.rarity} ${profile.species}**${shinyTag}!`,
         ``,
         `⚠️ Binary is locked - Claude Code is still running.`,
         ``,
@@ -362,7 +370,7 @@ const rerollBuddyTool = {
     autoManifestTools(S.currentBuddy);
 
     return [
-      `🎲 Found a **${profile.rarity} ${profile.species}**${shinyTag} after ~${attempts} attempts in ${elapsed}s!`,
+      `🎲 You got a **${profile.rarity} ${profile.species}**${shinyTag}!`,
       ``,
       `✅ Binary patched! Restart Claude Code to see your new companion.`,
     ].join('\n');

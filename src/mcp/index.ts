@@ -52,6 +52,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  // Refresh S.currentBuddy from disk before each tool call (in case CLI created a new buddy)
+  try {
+    const petConfig = loadPetConfigV2();
+    const activeSalt = petConfig?.activeProfile;
+    const activeProfile = activeSalt ? petConfig?.profiles[activeSalt] : undefined;
+    if (activeProfile) {
+      S.currentBuddy = { ...activeProfile };
+    } else if (activeSalt) {
+      // Profile not found in dict, but salt is set — derive from roll() as fallback
+      const userId = getClaudeUserId();
+      const rolled = roll(userId, activeSalt);
+      const companionName = getCompanionName();
+      S.currentBuddy = {
+        salt: activeSalt,
+        species: rolled.bones.species,
+        rarity: rolled.bones.rarity,
+        eye: rolled.bones.eye,
+        hat: rolled.bones.hat,
+        shiny: rolled.bones.shiny,
+        stats: rolled.bones.stats,
+        name: companionName,
+        personality: DEFAULT_PERSONALITIES[rolled.bones.species],
+        createdAt: new Date().toISOString(),
+      };
+    }
+  } catch {
+    // If refresh fails, continue with stale S.currentBuddy
+  }
+
   const toolEntry = dynamicTools.get(request.params.name);
   if (!toolEntry) throw new Error(`Tool not found: ${request.params.name}`);
   try {
@@ -104,6 +133,7 @@ function applyPendingPatch({ silent = false } = {}): void {
     saveProfile(pending.profile, { activate: true });
 
     // Update gacha state file directly (no server in memory)
+    let gachaUpdateSucceeded = true;
     if (existsSync(GACHA_STATE_FILE)) {
       try {
         const raw = JSON.parse(readFileSync(GACHA_STATE_FILE, 'utf-8')) as GachaState;
@@ -125,10 +155,14 @@ function applyPendingPatch({ silent = false } = {}): void {
         }
       } catch {
         // Non-fatal — gacha state will self-heal on next server start
+        gachaUpdateSucceeded = false;
       }
     }
 
-    unlinkSync(PENDING_PATCH_FILE);
+    // Only delete pending patch file if the entire operation (patch + gacha update) succeeded
+    if (gachaUpdateSucceeded) {
+      unlinkSync(PENDING_PATCH_FILE);
+    }
     if (!silent) {
       console.log(`✅ ${rarity} ${species}${shinyTag} is now active!`);
       console.log('Restart Claude Code to see your new companion.');

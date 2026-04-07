@@ -88,7 +88,9 @@ if (gachaState.sessionAffectionTokens === 1 && gachaState.sessionAffectionAccumu
   console.log('✅ Test 4: Token earned and accumulator reset');
   passed++;
 } else {
-  console.log(`❌ Test 4: Token ${gachaState.sessionAffectionTokens}, Acc ${gachaState.sessionAffectionAccumulator}`);
+  console.log(
+    `❌ Test 4: Token ${gachaState.sessionAffectionTokens}, Acc ${gachaState.sessionAffectionAccumulator}`,
+  );
   failed++;
 }
 

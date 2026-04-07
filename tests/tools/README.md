@@ -14,11 +14,13 @@ Manual integration tests for buddy-mcp core tools. These test actual tool behavi
 ## Running Tests
 
 Run all tool tests:
+
 ```bash
 npm run test:tools
 ```
 
 Run individual test:
+
 ```bash
 node tests/tools/pet-buddy.mjs
 ```

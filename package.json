@@ -1,6 +1,6 @@
 {
   "name": "@lyellr88/buddy-mcp",
-  "version": "1.3.1",
+  "version": "1.4.1",
   "description": "Gacha companion system for Claude Code. Collect, evolve, and patch your buddy via MCP",
   "type": "module",
   "bin": {

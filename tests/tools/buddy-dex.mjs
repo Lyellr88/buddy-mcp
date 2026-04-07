@@ -55,7 +55,9 @@ resetState();
 gachaState.discoveredSpecies = ['duck', 'cat', 'octopus', 'dragon', 'rabbit'];
 const result4 = await getHandler('view_buddy_dex')({});
 if (result4.includes('dragon') && result4.includes('rabbit')) {
-  console.log(`✅ Test 4: Dex displays large collection (${gachaState.discoveredSpecies.length} species)`);
+  console.log(
+    `✅ Test 4: Dex displays large collection (${gachaState.discoveredSpecies.length} species)`,
+  );
   passed++;
 } else {
   console.log('❌ Test 4: Dex display failed');

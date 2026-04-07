@@ -12,11 +12,14 @@ interface MenuEntry {
 
 // figlet-style block letters (hand-made, compact)
 const LOGO = [
-  '  __ _ _ __  _   _      _               _     _       ',
-  " / _` | '_ \\| | | |    | |__  _   _  __| | __| |_   _ ",
-  "| (_| | | | | |_| |____| '_ \\| | | |/ _` |/ _` | | | |",
-  ' \\__,_|_| |_|\\__, |____|_.__/|_|_|_|\\__,_|\\__,_|\\__, |',
-  '             |___/                               |___/ ',
+  ' _               _     _                  _ _ ',
+  '| |             | |   | |                | (_)',
+  '| |__  _   _  __| | __| |_   _        ___| |_ ',
+  "| '_ \\| | | |/ _` |/ _` | | | |______/ __| | |",
+  '| |_) | |_| | (_| | (_| | |_| |_____| (__| | |',
+  '|_.__/ \\__,_|\\__,_|\\__,_|\\__, |      \\___|_|_|',
+  '                          __/ |               ',
+  '                         |___/              ',
 ].join('\n');
 
 export async function runStartTUI(buddyCount: number): Promise<StartAction | null> {
@@ -113,15 +116,15 @@ export async function runStartTUI(buddyCount: number): Promise<StartAction | nul
         Text({
           content: LOGO,
           fg: FOCUS_BORDER,
-          height: 5,
+          height: 10,
         }),
         Text({
-          content: 'Hack Claude Code to get any buddy you want',
+          content: 'Build your perfect buddy with buddy-cli',
           fg: DIM_COLOR,
           height: 1,
         }),
 
-        Text({ content: '', height: 2 }),
+        Text({ content: '', height: 3 }),
 
         // Menu cards — inside a fixed-width box for alignment
         Box(

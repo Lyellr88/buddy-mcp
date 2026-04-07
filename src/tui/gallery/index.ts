@@ -74,7 +74,7 @@ export async function runGalleryTUI(
           borderStyle: 'rounded',
           border: true,
           borderColor: BORDER_COLOR,
-          title: ' buddy-mcp buddies ',
+          title: ' buddy-cli buddies ',
           titleAlignment: 'center',
           padding: 0,
         },

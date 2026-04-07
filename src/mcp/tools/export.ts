@@ -3,6 +3,7 @@ import { resolve } from 'path';
 
 import type { Bones, ProfileData } from '@/types.js';
 import { renderSprite } from '@/sprites/render.js';
+import { RARITY_HEX } from '@/tui/builder/colors.js';
 import { S, dynamicTools } from '../state.js';
 
 // SVG rendering constants
@@ -33,7 +34,7 @@ function sanitizeName(name: string): string {
   );
 }
 
-function buildSvg(lines: string[]): string {
+function buildSvg(lines: string[], borderColor: string = '#FFFFFF'): string {
   const maxLen = Math.max(...lines.map((l) => l.length), 1);
   const width = Math.ceil(maxLen * CHAR_WIDTH) + PAD_X * 2;
   const height = Math.ceil(lines.length * LINE_HEIGHT) + PAD_Y * 2;
@@ -41,13 +42,45 @@ function buildSvg(lines: string[]): string {
   const tspans = lines
     .map((line, i) => {
       const y = PAD_Y + (i + 1) * LINE_HEIGHT;
+      // Check if this is a border line (top/bottom box)
+      const isBorderLine = line.startsWith('╭') || line.startsWith('╰');
+      if (isBorderLine) {
+        return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${escapeXml(line)}</tspan>`;
+      }
+      // Check if this is the rarity/species line (has ★★)
+      const isRarityLine = line.includes('★★');
+      if (isRarityLine) {
+        return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${escapeXml(line)}</tspan>`;
+      }
+      // Check if this is a sprite line (has ASCII art characters from sprite data)
+      const isSpriteContent = /[()[\]/\\_.~`|^=<>:;,@*+ω-]/.test(line);
+      if (isSpriteContent && line.includes('│')) {
+        // For sprite lines with pipes, color both pipes and content with rarity color
+        const parts = line.split('│');
+        const colored = parts
+          .map((part) => escapeXml(part))
+          .join(`<tspan fill="${borderColor}">│</tspan>`);
+        return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${colored}</tspan>`;
+      }
+      // For lines with pipes, colorize them (card content lines)
+      if (line.includes('│')) {
+        const parts = line.split('│');
+        const colored = parts
+          .map((part) => escapeXml(part))
+          .join(`<tspan fill="${borderColor}">│</tspan>`);
+        return `    <tspan x="${PAD_X}" y="${y}">${colored}</tspan>`;
+      }
+      // For sprite lines (no box characters), color them with rarity color
+      if (!line.includes('│') && !isBorderLine) {
+        return `    <tspan x="${PAD_X}" y="${y}" fill="${borderColor}">${escapeXml(line)}</tspan>`;
+      }
       return `    <tspan x="${PAD_X}" y="${y}">${escapeXml(line)}</tspan>`;
     })
     .join('\n');
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`,
-    `  <rect width="${width}" height="${height}" fill="#1e1e2e" rx="10"/>`,
+    `  <rect width="${width}" height="${height}" fill="#000000" stroke="#FFFFFF" stroke-width="2" rx="10"/>`,
     `  <text font-family="'Cascadia Code','Fira Code','Courier New',monospace" font-size="${FONT_SIZE}" fill="#cdd6f4" xml:space="preserve">`,
     tspans,
     `  </text>`,
@@ -62,7 +95,6 @@ function buildCardLines(b: ProfileData): string[] {
   const ws = b.stats['WISDOM'] ?? 0;
   const sn = b.stats['SNARK'] ?? 0;
   const shinyTag = b.shiny ? ' ✨ SHINY ✨' : '';
-  const hatLine = b.hat && b.hat !== 'none' ? `│  ${('Hat: ' + b.hat).padEnd(34)}  │` : null;
 
   const bones: Bones = {
     species: b.species,
@@ -82,20 +114,19 @@ function buildCardLines(b: ProfileData): string[] {
   return [
     '╭──────────────────────────────────────╮',
     `│ ${shinyTag.padEnd(36)} │`,
-    `│  ★★ ${b.rarity.toUpperCase().padEnd(14)} ${b.species.toUpperCase().padStart(15)}  │`,
+    `│  ★★ ${b.rarity.toUpperCase().padEnd(14)}  ${b.species.toUpperCase().padStart(15)} │`,
     '│                                      │',
-    ...(hatLine ? [hatLine] : []),
     ...spriteLines,
     '│                                      │',
     `│  ${(b.name ?? 'Buddy').padEnd(34)}  │`,
     '│                                      │',
     ...bioLines,
     '│                                      │',
-    `│  DEBUGGING  ${statBar(dg)}  ${String(dg).padStart(2)}           │`,
-    `│  PATIENCE   ${statBar(pt)}  ${String(pt).padStart(2)}           │`,
-    `│  CHAOS      ${statBar(ch)}  ${String(ch).padStart(2)}           │`,
-    `│  WISDOM     ${statBar(ws)}  ${String(ws).padStart(2)}           │`,
-    `│  SNARK      ${statBar(sn)}  ${String(sn).padStart(2)}           │`,
+    `│  DEBUGGING  ${statBar(dg)}  ${String(dg).padStart(3)}          │`,
+    `│  PATIENCE   ${statBar(pt)}  ${String(pt).padStart(3)}          │`,
+    `│  CHAOS      ${statBar(ch)}  ${String(ch).padStart(3)}          │`,
+    `│  WISDOM     ${statBar(ws)}  ${String(ws).padStart(3)}          │`,
+    `│  SNARK      ${statBar(sn)}  ${String(sn).padStart(3)}          │`,
     '│                                      │',
     '╰──────────────────────────────────────╯',
   ];
@@ -120,11 +151,13 @@ const exportBuddyCardTool = {
     S.lastToolCalled = 'export_buddy_card';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     const b = S.currentBuddy;
+    const borderColor = RARITY_HEX[b.rarity] ?? '#FFFFFF';
+
     const outputPath = args['path']
       ? resolve(String(args['path']))
       : resolve(`buddy-${sanitizeName(b.name ?? 'buddy')}-card.svg`);
     try {
-      writeFileSync(outputPath, buildSvg(buildCardLines(b)));
+      writeFileSync(outputPath, buildSvg(buildCardLines(b), borderColor));
       return `✅ Card exported to: ${outputPath}`;
     } catch (err: unknown) {
       return `❌ Export failed: ${(err as Error).message}`;
@@ -151,6 +184,8 @@ const exportBuddySpriteTool = {
     S.lastToolCalled = 'export_buddy_sprite';
     if (!S.currentBuddy) return 'Initialize a buddy first!';
     const b = S.currentBuddy;
+    const borderColor = RARITY_HEX[b.rarity] ?? '#FFFFFF';
+
     const bones: Bones = {
       species: b.species,
       rarity: b.rarity,
@@ -164,7 +199,7 @@ const exportBuddySpriteTool = {
       ? resolve(String(args['path']))
       : resolve(`buddy-${sanitizeName(b.name ?? 'buddy')}-sprite.svg`);
     try {
-      writeFileSync(outputPath, buildSvg(lines));
+      writeFileSync(outputPath, buildSvg(lines, borderColor));
       return `✅ Sprite exported to: ${outputPath}`;
     } catch (err: unknown) {
       return `❌ Export failed: ${(err as Error).message}`;
