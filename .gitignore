@@ -16,6 +16,9 @@ buddy-flumox-sprite.svg
 agents/
 any-buddy-main/
 /*.svg
+mcp-publisher.exe
+.mcpregistry_github_token
+.mcpregistry_registry_token
 
 # Docs (internal planning/dev notes)
 docs/
