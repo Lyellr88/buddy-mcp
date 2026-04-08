@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-LIVE-blue)](https://registry.modelcontextprotocol.io/?q=buddy-mcp)
 [![buddy-mcp MCP server](https://glama.ai/mcp/servers/Lyellr88/buddy-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Lyellr88/buddy-mcp)
+[![Socket Badge](https://badge.socket.dev/npm/package/@lyellr88/buddy-mcp/1.4.4)](https://badge.socket.dev/npm/package/@lyellr88/buddy-mcp/1.4.4)
 
 Need a break from long code sessions? Stuck on a bug? Reroll a buddy, talk with them, or interact by petting them to build affection and improve your odds at higher-tier buddies on the next roll. If enough people want it, I'll build out Battle-Buddies where you can pit your buddy against others and unlock exclusive species that sync back into your local pool.
 
