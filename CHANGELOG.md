@@ -366,6 +366,25 @@
 ### Planning
 - Created spec for `buddy_think` consolidation tool (`docs/current/buddy_think_consolidation.md`) — will merge 20 stat tools into single NLP-friendly interface in v1.5.0
 
+
+## v1.4.2 — SVG Export Polish + CLI-to-MCP Profile Sync
+
+### SVG Export Fixes
+- Fixed XML character escaping in sprite lines — special characters (`<`, `>`, `&`, quotes) now properly escaped before coloring
+- Expanded sprite character detection regex to include all ASCII art punctuation: `()[]\/_.~`|^=<>:;,@*+ω-` — backticks, tildes, hyphens, and carets now properly colored with rarity color
+- Fixed stat value alignment for 3-digit stats (e.g., CHAOS 100) — changed `padStart(2)` to `padStart(3)` across all stat bars
+- Species name alignment improved — adjusted spacing between rarity and species to properly center within 40-char box
+- Result: all export SVGs now display with uniform rarity coloring throughout sprites, proper border alignment on all lines, and correct padding for any stat value
+
+### CLI-to-MCP Profile Synchronization
+- Fixed `src/tui/apply/index.ts` `doSaveProfile()` guard — was only called inside the "if (name)" conditional, preventing profile save when user skipped name prompt
+- Profile now always saves to the buddy dict regardless of name entry path — ensures new buddies created in CLI builder immediately appear in MCP server
+- Added per-request `S.currentBuddy` refresh from disk in `src/mcp/index.ts` to catch newly-created buddies
+- Added fallback to `roll()` when `activeProfile` points to missing profile in dict
+
+### Tests
+- All 359 tests passing
+
 ## v1.4.3 — Comment Hygiene + Hero SVG Polish + README Badges
 
 ### Comment Hygiene
@@ -390,21 +409,3 @@
 - Added npm downloads badge
 - Reordered badges: CI first, then downloads, version, Node, license
 - Standardized badge color to blue across npm badges
-
-## v1.4.2 — SVG Export Polish + CLI-to-MCP Profile Sync
-
-### SVG Export Fixes
-- Fixed XML character escaping in sprite lines — special characters (`<`, `>`, `&`, quotes) now properly escaped before coloring
-- Expanded sprite character detection regex to include all ASCII art punctuation: `()[]\/_.~`|^=<>:;,@*+ω-` — backticks, tildes, hyphens, and carets now properly colored with rarity color
-- Fixed stat value alignment for 3-digit stats (e.g., CHAOS 100) — changed `padStart(2)` to `padStart(3)` across all stat bars
-- Species name alignment improved — adjusted spacing between rarity and species to properly center within 40-char box
-- Result: all export SVGs now display with uniform rarity coloring throughout sprites, proper border alignment on all lines, and correct padding for any stat value
-
-### CLI-to-MCP Profile Synchronization
-- Fixed `src/tui/apply/index.ts` `doSaveProfile()` guard — was only called inside the "if (name)" conditional, preventing profile save when user skipped name prompt
-- Profile now always saves to the buddy dict regardless of name entry path — ensures new buddies created in CLI builder immediately appear in MCP server
-- Added per-request `S.currentBuddy` refresh from disk in `src/mcp/index.ts` to catch newly-created buddies
-- Added fallback to `roll()` when `activeProfile` points to missing profile in dict
-
-### Tests
-- All 359 tests passing
