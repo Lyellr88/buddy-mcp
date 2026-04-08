@@ -409,3 +409,15 @@
 - Added npm downloads badge
 - Reordered badges: CI first, then downloads, version, Node, license
 - Standardized badge color to blue across npm badges
+
+## v1.4.4 — Registry Distribution + First Public Release
+
+### Registry Listings
+- Published to official MCP registry (`registry.modelcontextprotocol.io`) with `server.json` manifest
+- Added `glama.json` for Glama.ai visual preview and sandbox listing
+- Submitted to mcp.so, mcpmarket.com, and mcpservers.org for IDE feed and SEO discovery
+
+### Docs
+- Added `docs/current/release.md` — first public release notes covering full project history, technical architecture, and feature overview
+- Updated hero SVG with larger text, better centering, and improved layout
+- Updated README badges and description

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Lyellr88/buddy-mcp",
+  "description": "Claude Code creature collection game. Hatch buddies, pet to boost roll luck, complete the BuddyDex.",
+  "repository": {
+    "url": "https://github.com/Lyellr88/buddy-mcp",
+    "source": "github"
+  },
+  "version": "1.4.4",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@lyellr88/buddy-mcp",
+      "version": "1.4.4",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 {
   "name": "@lyellr88/buddy-mcp",
-  "version": "1.4.3",
-  "description": "Gacha companion system for Claude Code. Collect, evolve, and patch your buddy via MCP",
+  "version": "1.4.4",
+  "mcpName": "io.github.Lyellr88/buddy-mcp",
+  "description": "Claude Code creature collection game. Hatch buddies, pet to boost roll luck, complete the BuddyDex.",
   "type": "module",
   "bin": {
     "buddy-mcp": "./dist/mcp/index.js",
@@ -38,17 +39,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lyell/buddy-mcp"
+    "url": "https://github.com/Lyellr88/buddy-mcp"
   },
   "keywords": [
     "claude",
     "claude-code",
-    "buddy",
-    "companion",
-    "pet",
-    "gacha",
     "mcp",
-    "model-context-protocol"
+    "model-context-protocol",
+    "terminal",
+    "cli",
+    "ascii",
+    "ai-companion",
+    "developer-tools",
+    "developer-experience",
+    "dx",
+    "terminal-ui",
+    "tui"
   ],
   "author": "Ryan Lyell",
   "license": "MIT",
