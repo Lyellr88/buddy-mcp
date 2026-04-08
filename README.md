@@ -9,7 +9,7 @@
 
 Need a break from long code sessions? Stuck on a bug? Reroll a buddy, talk with them, or interact by petting them to build affection and improve your odds at higher-tier buddies on the next roll. If enough people want it, I'll build out Battle-Buddies where you can pit your buddy against others and unlock exclusive species that sync back into your local pool.
 
-A collect them all companion system for Claude Code. Roll for a rare buddy, patch it directly into the binary,. buddy-mcp is an MCP server that replaces Claude Code's built-in companion with one you actually rolled for. Reroll, get lucky, close Claude, reopen. Your new buddy is waiting. Legendary buddy could be yours on your next Claude session
+> A collect them all companion system for Claude Code. Roll for a rare buddy, patch it directly into the binary,. buddy-mcp is an MCP server that replaces Claude Code's built-in companion with one you actually rolled for. Reroll, get lucky, close Claude, reopen. Your new buddy is waiting. Legendary buddy could be yours on your next Claude session
 
 ---
 
