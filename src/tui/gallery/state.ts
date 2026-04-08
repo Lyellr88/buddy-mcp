@@ -7,8 +7,8 @@ import { isNodeRuntime } from '@/patcher/salt-ops.js';
 export const DEFAULT_PROFILE = '__default__';
 
 export interface GalleryEntry {
-  name: string; 
-  salt: string; 
+  name: string;
+  salt: string;
   isDefault: boolean;
   isActive: boolean;
   bones: Bones;

@@ -366,6 +366,31 @@
 ### Planning
 - Created spec for `buddy_think` consolidation tool (`docs/current/buddy_think_consolidation.md`) — will merge 20 stat tools into single NLP-friendly interface in v1.5.0
 
+## v1.4.3 — Comment Hygiene + Hero SVG Polish + README Badges
+
+### Comment Hygiene
+- Removed narration comments, section labels, and AI-generated captions across all `src/` files
+- Kept only comments explaining non-obvious reasoning, safety constraints, or design decisions
+- Stripped section labels (`--- Persistence ---`, `// Header`, `// Patch binary`, etc.)
+- Removed sequential step narration and comments describing what the next line plainly does
+- Fixed all em dashes in comments and user-facing strings to commas or colons
+- Replaced `/* ignore */` and `/* noop */` empty catch comments with bare catches
+- Added `allowEmptyCatch: true` to ESLint config to support bare empty catches
+- Net: 39 files changed, 103 insertions, 384 deletions
+
+### Hero SVG Polish
+- Scaled up section titles (20px to 28px), dice illustration (1.2x), and all description/spec text
+- Centered all text elements properly (removed x offset misalignment on tspans)
+- Enlarged BuddyDex grid text (12px to 14px) and progress bar (8px to 10px)
+- Renamed "FEATURED" panel to "BUILD" for clearer UX framing
+- Enlarged buddy sprite viewport and increased font size for legibility
+- Updated collection description to monospace, uppercase, blue accent text
+
+### README Badges
+- Added npm downloads badge
+- Reordered badges: CI first, then downloads, version, Node, license
+- Standardized badge color to blue across npm badges
+
 ## v1.4.2 — SVG Export Polish + CLI-to-MCP Profile Sync
 
 ### SVG Export Fixes
