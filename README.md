@@ -10,9 +10,6 @@
 >
 > Thanks to everyone who checked it out while it was relevant.
 
----
-
-> **What was built:** A wyhash salt collision engine that brute-forced a seed matching the target species and rarity against the Claude Code binary. Rerolling patched the binary directly — same userId, same rotationIndex, same buddy every time across reinstalls. Atomic writes on all state files, a background watcher for locked binaries, a full gacha system with 18 species, affection tokens, BuddyDex, 20 stat personality tools, a TUI builder, and 359 tests across 30 files with CI on Ubuntu, macOS, and Windows. Listed on 5 MCP registries. Built in a weekend. 
 
 ---
 
