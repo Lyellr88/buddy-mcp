@@ -1,5 +1,21 @@
 ![buddy-mcp hero](assets/hero.svg)
 
+> **Status: Archived / Historical**
+>
+> The official Claude Code `/buddy` feature was a limited-time April Fools Easter egg (April 1-7, 2026). I built buddy-mcp during that window thinking it might stick around longer. After it was removed, the deep native integration this tool was designed for no longer exists.
+>
+> The repo is kept as an archive. The code, gacha system, TUI builder, and MCP tools still work as a standalone terminal companion — but the magic was always the native UI integration, and that's gone.
+>
+> If Anthropic ever brings back native companion support or opens up a proper extension API, I'll pick this back up where I left off.
+>
+> Thanks to everyone who checked it out while it was relevant.
+
+---
+
+> **What was built:** A wyhash salt collision engine that brute-forced a seed matching the target species and rarity against the Claude Code binary. Rerolling patched the binary directly — same userId, same rotationIndex, same buddy every time across reinstalls. Atomic writes on all state files, a background watcher for locked binaries, a full gacha system with 18 species, affection tokens, BuddyDex, 20 stat personality tools, a TUI builder, and 359 tests across 30 files with CI on Ubuntu, macOS, and Windows. Listed on 5 MCP registries. Built in a weekend. 
+
+---
+
 [![CI](https://github.com/Lyellr88/buddy-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Lyellr88/buddy-mcp/actions/workflows/ci.yml)
 [![npm downloads](https://img.shields.io/npm/dt/@lyellr88/buddy-mcp?color=blue&style=flat-square)](https://www.npmjs.com/package/@lyellr88/buddy-mcp)
 [![npm version](https://img.shields.io/npm/v/@lyellr88/buddy-mcp?color=blue)](https://www.npmjs.com/package/@lyellr88/buddy-mcp)
